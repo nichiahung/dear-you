@@ -1,0 +1,1559 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>致 · 妳 — A Love Letter in Chapters</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Pinyon+Script&family=Noto+Serif+TC:wght@200;300;400;500;600&family=Cormorant:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+
+<!-- Iconify (via jsdelivr CDN) for Phosphor Thin icons - elegant line weights -->
+<script async src="https://cdn.jsdelivr.net/npm/@iconify/iconify@3.1.1/dist/iconify.min.js"></script>
+
+<style>
+  :root {
+    /* Dusty rose palette - elegant, aspirational */
+    --rose-lightest: #f5ecea;
+    --rose-light: #e8d5d2;
+    --rose: #c9a8a8;
+    --rose-deep: #a67f7f;
+    --mauve: #8a6a6b;
+
+    --paper: #f8f1eb;
+    --paper-warm: #f0e5db;
+    --paper-cream: #faf5ee;
+
+    --ink: #3d2c3a;
+    --ink-soft: #5d4450;
+    --ink-faded: #8a7580;
+
+    --gold: #b08d57;
+    --gold-soft: #c4a876;
+
+    --line: #d9c5bd;
+    --line-soft: #e8dcd4;
+
+    --shadow-soft: 0 2px 20px rgba(61, 44, 58, 0.06);
+    --shadow-medium: 0 10px 40px rgba(61, 44, 58, 0.12);
+    --shadow-deep: 0 20px 60px rgba(61, 44, 58, 0.25);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  /* Iconify base - Phosphor Thin icons */
+  .iconify {
+    display: inline-block;
+    vertical-align: middle;
+    font-size: inherit;
+    width: 1em;
+    height: 1em;
+  }
+
+  .chapter-icon {
+    display: block;
+    margin: 0 auto 8px;
+    font-size: 26px;
+    color: var(--ink-faded);
+    transition: color 0.3s, transform 0.3s;
+  }
+
+  .chapter.active .chapter-icon {
+    color: var(--rose-deep);
+    transform: scale(1.1);
+  }
+
+  .entry-actions .iconify {
+    font-size: 15px;
+  }
+
+  html, body {
+    min-height: 100vh;
+    font-family: 'Noto Serif TC', 'Cormorant Garamond', Georgia, serif;
+    color: var(--ink);
+    background: var(--paper);
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  body {
+    background:
+      radial-gradient(ellipse at 15% 10%, rgba(201, 168, 168, 0.15) 0%, transparent 55%),
+      radial-gradient(ellipse at 85% 90%, rgba(176, 141, 87, 0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 50%, rgba(232, 213, 210, 0.1) 0%, transparent 70%),
+      var(--paper);
+  }
+
+  /* Paper texture overlay */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.24 0 0 0 0 0.17 0 0 0 0 0.23 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1;
+    mix-blend-mode: multiply;
+  }
+
+  /* ============================================
+     COVER / SETUP / LOCK
+  ============================================ */
+  .stage {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    background: var(--paper);
+    overflow-y: auto;
+    padding: 40px 20px;
+  }
+  .stage.active { display: flex; }
+
+  /* Pexels peony background - blurred for elegance */
+  .stage-bg {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(to bottom, rgba(248, 241, 235, 0.82) 0%, rgba(248, 241, 235, 0.88) 50%, rgba(240, 229, 219, 0.92) 100%),
+      url("https://images.pexels.com/photos/931177/pexels-photo-931177.jpeg?auto=compress&cs=tinysrgb&w=1600");
+    background-size: cover;
+    background-position: center;
+    pointer-events: none;
+    animation: bgDrift 30s ease-in-out infinite;
+  }
+
+  @keyframes bgDrift {
+    0%, 100% { background-position: center 30%; }
+    50% { background-position: center 45%; }
+  }
+
+  /* Fallback gradient overlay (in case image fails) */
+  .stage-bg::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 50% 40%, rgba(201, 168, 168, 0.15) 0%, transparent 60%),
+      radial-gradient(ellipse at 20% 80%, rgba(176, 141, 87, 0.08) 0%, transparent 50%);
+  }
+
+  .cover-content {
+    max-width: 500px;
+    width: 100%;
+    text-align: center;
+    position: relative;
+    z-index: 2;
+    padding: 60px 40px;
+  }
+
+  /* Decorative ornaments */
+  .ornament-top {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 28px;
+    opacity: 0;
+    animation: fadeDown 1.2s 0.2s ease forwards;
+  }
+
+  .ornament-top .dash {
+    width: 40px;
+    height: 1px;
+    background: var(--gold-soft);
+  }
+
+  .ornament-top .diamond {
+    color: var(--gold);
+    font-size: 10px;
+    letter-spacing: 4px;
+  }
+
+  .cover-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 15px;
+    letter-spacing: 6px;
+    color: var(--mauve);
+    text-transform: uppercase;
+    margin-bottom: 32px;
+    opacity: 0;
+    animation: fadeUp 1.4s 0.5s ease forwards;
+  }
+
+  .cover-title-zh {
+    font-family: 'Noto Serif TC', serif;
+    font-weight: 200;
+    font-size: 88px;
+    line-height: 1;
+    color: var(--ink);
+    letter-spacing: 12px;
+    margin-left: 12px; /* optical compensation */
+    margin-bottom: 20px;
+    opacity: 0;
+    animation: fadeUp 1.8s 0.8s ease forwards;
+  }
+
+  .cover-title-sep {
+    width: 1px;
+    height: 40px;
+    background: linear-gradient(to bottom, transparent, var(--gold), transparent);
+    margin: 0 auto 24px;
+    opacity: 0;
+    animation: growDown 1s 1.4s ease forwards;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes growDown {
+    from { opacity: 0; height: 0; }
+    to { opacity: 1; height: 40px; }
+  }
+
+  .cover-title-en {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 26px;
+    line-height: 1.4;
+    color: var(--mauve);
+    letter-spacing: 3px;
+    margin-bottom: 50px;
+    opacity: 0;
+    animation: fadeUp 1.6s 1.6s ease forwards;
+  }
+
+  .cover-hint {
+    font-family: 'Pinyon Script', cursive;
+    font-size: 28px;
+    color: var(--rose-deep);
+    margin-bottom: 28px;
+    opacity: 0;
+    animation: fadeUp 1.4s 2s ease forwards;
+  }
+
+  .date-inputs {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 32px;
+    opacity: 0;
+    animation: fadeUp 1.2s 2.3s ease forwards;
+  }
+
+  .date-inputs input {
+    width: 82px;
+    padding: 14px 4px;
+    border: none;
+    border-bottom: 1px solid var(--rose);
+    background: transparent;
+    font-family: 'Cormorant Garamond', 'Noto Serif TC', serif;
+    font-weight: 400;
+    font-size: 24px;
+    color: var(--ink);
+    text-align: center;
+    outline: none;
+    border-radius: 0;
+    letter-spacing: 2px;
+    transition: border-color 0.3s;
+  }
+
+  .date-inputs input:focus { border-color: var(--gold); }
+
+  .date-inputs .sep {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 24px;
+    color: var(--rose);
+  }
+
+  .date-label {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 4px;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--ink-faded);
+    text-transform: uppercase;
+    opacity: 0;
+    animation: fadeUp 1.2s 2.3s ease forwards;
+  }
+
+  .date-label span { width: 82px; text-align: center; }
+  .date-label .sp { width: 16px; }
+
+  .open-btn {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 18px;
+    background: transparent;
+    border: 1px solid var(--ink-soft);
+    color: var(--ink);
+    padding: 14px 48px;
+    border-radius: 0;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    position: relative;
+    overflow: hidden;
+    opacity: 0;
+    animation: fadeUp 1.2s 2.6s ease forwards;
+  }
+
+  .open-btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--ink);
+    transform: translateY(100%);
+    transition: transform 0.4s ease;
+    z-index: 0;
+  }
+
+  .open-btn span { position: relative; z-index: 1; transition: color 0.4s ease; }
+  .open-btn:hover::before, .open-btn:active::before { transform: translateY(0); }
+  .open-btn:hover span, .open-btn:active span { color: var(--paper); }
+
+  .msg {
+    margin-top: 22px;
+    font-family: 'Pinyon Script', cursive;
+    font-size: 22px;
+    min-height: 28px;
+    letter-spacing: 1px;
+  }
+  .msg.error { color: var(--rose-deep); }
+  .msg.success { color: var(--gold); }
+
+  .small-link {
+    margin-top: 40px;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 12px;
+    color: var(--ink-faded);
+    letter-spacing: 2px;
+    opacity: 0;
+    animation: fadeUp 1.2s 2.9s ease forwards;
+  }
+  .small-link a {
+    color: var(--rose-deep);
+    text-decoration: underline dotted;
+    text-underline-offset: 4px;
+    cursor: pointer;
+  }
+
+  /* ============================================
+     MAIN APP
+  ============================================ */
+  #app {
+    position: relative;
+    z-index: 2;
+    min-height: 100vh;
+    display: none;
+  }
+  #app.visible { display: block; animation: pageReveal 1s ease; }
+
+  @keyframes pageReveal {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .app-header {
+    padding: 64px 32px 40px;
+    text-align: center;
+    position: relative;
+  }
+
+  .app-header::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold), transparent);
+  }
+
+  .app-title-zh {
+    font-family: 'Noto Serif TC', serif;
+    font-weight: 200;
+    font-size: 48px;
+    letter-spacing: 18px;
+    margin-left: 18px;
+    color: var(--ink);
+    margin-bottom: 12px;
+  }
+
+  .app-title-en {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 16px;
+    letter-spacing: 5px;
+    color: var(--mauve);
+    text-transform: uppercase;
+  }
+
+  /* === Chapter nav === */
+  .chapters {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    flex-wrap: wrap;
+    padding: 48px 20px 40px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .chapter {
+    flex: 1;
+    min-width: 140px;
+    font-family: inherit;
+    background: transparent;
+    border: none;
+    padding: 20px 12px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.3s ease;
+    text-align: center;
+  }
+
+  .chapter-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 12px;
+    letter-spacing: 4px;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .chapter-name-zh {
+    font-family: 'Noto Serif TC', serif;
+    font-weight: 300;
+    font-size: 18px;
+    letter-spacing: 4px;
+    color: var(--ink-faded);
+    margin-bottom: 4px;
+    transition: color 0.3s;
+  }
+
+  .chapter-name-en {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 14px;
+    letter-spacing: 2px;
+    color: var(--ink-faded);
+    opacity: 0.7;
+    transition: color 0.3s;
+  }
+
+  .chapter.active .chapter-name-zh,
+  .chapter.active .chapter-name-en { color: var(--ink); opacity: 1; }
+
+  .chapter.active .chapter-name-zh { font-weight: 500; }
+
+  .chapter::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 1px;
+    background: var(--ink);
+    transition: width 0.4s ease;
+  }
+
+  .chapter.active::after { width: 40px; }
+
+  /* === Main content === */
+  main {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 20px 28px 100px;
+  }
+
+  /* Chapter frontispiece — a narrow hero image that introduces each chapter */
+  .chapter-frontispiece {
+    width: calc(100% + 56px);
+    margin-left: -28px;
+    margin-right: -28px;
+    height: 180px;
+    position: relative;
+    margin-bottom: 40px;
+    overflow: hidden;
+    background-size: cover;
+    background-position: center;
+    transition: background-image 0.6s ease;
+    opacity: 0;
+    animation: fpFade 1s 0.2s ease forwards;
+  }
+
+  @keyframes fpFade {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .chapter-frontispiece::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(248, 241, 235, 0.25) 0%,
+      rgba(248, 241, 235, 0.5) 50%,
+      rgba(248, 241, 235, 0.85) 100%
+    );
+  }
+
+  .chapter-frontispiece-caption {
+    position: absolute;
+    bottom: 18px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-family: 'Pinyon Script', cursive;
+    font-size: 26px;
+    color: var(--mauve);
+    letter-spacing: 1px;
+    z-index: 2;
+    text-shadow: 0 1px 8px rgba(248, 241, 235, 0.8);
+  }
+
+  /* Chapter-specific images (Pexels, verified accessible) */
+  .fp-letters { background-image: url("https://images.pexels.com/photos/39517/rose-flower-blossom-bloom-39517.jpeg?auto=compress&cs=tinysrgb&w=1200"); }
+  .fp-margins { background-image: url("https://images.pexels.com/photos/756903/pexels-photo-756903.jpeg?auto=compress&cs=tinysrgb&w=1200"); }
+  .fp-chronicles { background-image: url("https://images.pexels.com/photos/1022922/pexels-photo-1022922.jpeg?auto=compress&cs=tinysrgb&w=1200"); }
+  .fp-voices { background-image: url("https://images.pexels.com/photos/1071882/pexels-photo-1071882.jpeg?auto=compress&cs=tinysrgb&w=1200"); }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--line-soft);
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .section-title {
+    font-family: 'Cormorant Garamond', 'Noto Serif TC', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 28px;
+    color: var(--ink);
+    letter-spacing: 1px;
+  }
+
+  .section-count {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 13px;
+    color: var(--ink-faded);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  .new-btn {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 15px;
+    background: transparent;
+    border: 1px solid var(--rose);
+    color: var(--mauve);
+    cursor: pointer;
+    padding: 8px 22px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    transition: all 0.3s;
+  }
+
+  .new-btn:active { background: var(--rose); color: var(--paper); }
+
+  /* === Entry card === */
+  .entry {
+    background: var(--paper-cream);
+    border: 1px solid var(--line-soft);
+    padding: 36px 34px;
+    margin-bottom: 28px;
+    position: relative;
+    box-shadow: var(--shadow-soft);
+    transition: box-shadow 0.4s, transform 0.4s;
+    animation: entryFade 0.6s ease backwards;
+  }
+
+  .entry:nth-child(1) { animation-delay: 0.05s; }
+  .entry:nth-child(2) { animation-delay: 0.1s; }
+  .entry:nth-child(3) { animation-delay: 0.15s; }
+  .entry:nth-child(4) { animation-delay: 0.2s; }
+  .entry:nth-child(n+5) { animation-delay: 0.25s; }
+
+  @keyframes entryFade {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .entry:hover {
+    box-shadow: var(--shadow-medium);
+  }
+
+  .entry-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .entry-date {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 15px;
+    color: var(--ink-faded);
+    letter-spacing: 2px;
+  }
+
+  .entry-actions button {
+    background: transparent;
+    border: none;
+    color: var(--ink-faded);
+    cursor: pointer;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 14px;
+    margin-left: 12px;
+    letter-spacing: 2px;
+    transition: color 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .entry-actions button:hover,
+  .entry-actions button:active { color: var(--rose-deep); }
+
+  .entry-title {
+    font-family: 'Cormorant Garamond', 'Noto Serif TC', serif;
+    font-weight: 400;
+    font-size: 26px;
+    line-height: 1.35;
+    margin-bottom: 14px;
+    color: var(--ink);
+    letter-spacing: 0.5px;
+  }
+
+  .entry-body {
+    font-family: 'Noto Serif TC', 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: 16px;
+    line-height: 2;
+    color: var(--ink-soft);
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  .entry-media {
+    margin-top: 22px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+  }
+
+  .entry-media img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border: 1px solid var(--line);
+    padding: 6px;
+    background: var(--paper-cream);
+    box-shadow: var(--shadow-soft);
+    transition: transform 0.3s;
+  }
+
+  .entry-media img:active { transform: scale(0.98); }
+
+  .entry-audio { margin-top: 18px; }
+
+  .entry-audio audio {
+    width: 100%;
+    max-width: 420px;
+    height: 38px;
+    filter: sepia(0.2) saturate(0.9);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 80px 20px;
+  }
+
+  .empty-state .mark {
+    font-family: 'Pinyon Script', cursive;
+    font-size: 56px;
+    color: var(--rose);
+    opacity: 0.5;
+    margin-bottom: 16px;
+  }
+
+  .empty-state .msg-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 18px;
+    color: var(--ink-faded);
+    letter-spacing: 2px;
+  }
+
+  /* === Voices chapter special styling === */
+  .voices-intro {
+    text-align: center;
+    padding: 24px 0 40px;
+    max-width: 540px;
+    margin: 0 auto;
+    font-family: 'Noto Serif TC', serif;
+    font-weight: 300;
+    font-size: 15px;
+    line-height: 2;
+    color: var(--ink-soft);
+    border-bottom: 1px solid var(--line-soft);
+    margin-bottom: 40px;
+  }
+
+  .voices-intro .quote {
+    font-family: 'Pinyon Script', cursive;
+    font-size: 32px;
+    color: var(--rose-deep);
+    margin: 12px 0;
+    line-height: 1.2;
+  }
+
+  .voice-card {
+    background: linear-gradient(135deg, var(--paper-cream) 0%, var(--rose-lightest) 100%);
+    border: 1px solid var(--rose);
+    padding: 36px 34px;
+    margin-bottom: 28px;
+    position: relative;
+    box-shadow: var(--shadow-medium);
+    animation: entryFade 0.6s ease backwards;
+  }
+
+  .voice-card::before {
+    content: "❝";
+    position: absolute;
+    top: 12px;
+    left: 24px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 48px;
+    color: var(--rose);
+    opacity: 0.4;
+    line-height: 1;
+  }
+
+  .voice-card .entry-title { padding-left: 24px; margin-top: 8px; }
+
+  /* === Editor modal === */
+  .modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(61, 44, 58, 0.55);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 20px;
+    z-index: 50;
+    overflow-y: auto;
+  }
+  .modal.visible { display: flex; animation: modalFade 0.3s ease; }
+
+  @keyframes modalFade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .modal-card {
+    background: var(--paper-cream);
+    border: 1px solid var(--line);
+    max-width: 640px;
+    width: 100%;
+    padding: 44px 38px;
+    box-shadow: var(--shadow-deep);
+    margin: 20px 0;
+    position: relative;
+    animation: cardRise 0.4s ease;
+  }
+
+  @keyframes cardRise {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .modal-card::before {
+    content: "";
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    border: 1px solid var(--line-soft);
+    pointer-events: none;
+  }
+
+  .modal-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 28px;
+    margin-bottom: 8px;
+    color: var(--ink);
+    text-align: center;
+    letter-spacing: 2px;
+    position: relative;
+  }
+
+  .modal-subtitle {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 12px;
+    letter-spacing: 4px;
+    color: var(--gold);
+    text-align: center;
+    text-transform: uppercase;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--line-soft);
+    position: relative;
+  }
+
+  .field { margin-bottom: 24px; position: relative; }
+
+  .field label {
+    display: block;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 12px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--mauve);
+    margin-bottom: 8px;
+  }
+
+  .field input, .field textarea {
+    width: 100%;
+    padding: 10px 0;
+    border: none;
+    border-bottom: 1px solid var(--line);
+    background: transparent;
+    font-family: 'Noto Serif TC', 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: 17px;
+    color: var(--ink);
+    outline: none;
+    resize: vertical;
+    border-radius: 0;
+    transition: border-color 0.3s;
+    line-height: 1.8;
+  }
+
+  .field input:focus, .field textarea:focus { border-color: var(--gold); }
+
+  .field textarea { min-height: 180px; }
+
+  .media-tools {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+
+  .media-btn {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 14px;
+    background: transparent;
+    border: 1px solid var(--rose);
+    color: var(--mauve);
+    padding: 10px 18px;
+    cursor: pointer;
+    letter-spacing: 2px;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .media-btn .iconify { font-size: 16px; margin-right: 6px; }
+
+  .media-btn:active, .media-btn:hover { background: var(--rose); color: var(--paper); }
+  .media-btn:active .iconify, .media-btn:hover .iconify { color: var(--paper); }
+
+  .media-btn.recording {
+    background: var(--rose-deep);
+    color: var(--paper);
+    border-color: var(--rose-deep);
+    animation: recPulse 1.4s ease infinite;
+  }
+
+  @keyframes recPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(166, 127, 127, 0.6); }
+    50% { box-shadow: 0 0 0 10px rgba(166, 127, 127, 0); }
+  }
+
+  .media-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .media-chip {
+    position: relative;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    padding: 4px;
+    box-shadow: var(--shadow-soft);
+  }
+
+  .media-chip img { display: block; max-height: 100px; max-width: 140px; }
+  .media-chip audio { display: block; height: 36px; padding: 0 4px; }
+
+  .media-chip .remove {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    font-size: 12px;
+    cursor: pointer;
+    line-height: 1;
+  }
+
+  .modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line-soft);
+  }
+
+  .btn-primary, .btn-secondary {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 15px;
+    padding: 12px 32px;
+    cursor: pointer;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    transition: all 0.3s;
+    border-radius: 0;
+  }
+
+  .btn-primary {
+    background: var(--ink);
+    border: 1px solid var(--ink);
+    color: var(--paper);
+  }
+  .btn-primary:active { background: var(--mauve); border-color: var(--mauve); }
+
+  .btn-secondary {
+    background: transparent;
+    border: 1px solid var(--ink-soft);
+    color: var(--ink-soft);
+  }
+  .btn-secondary:active { background: var(--ink-soft); color: var(--paper); }
+
+  /* === Responsive === */
+  @media (max-width: 640px) {
+    .cover-title-zh { font-size: 64px; letter-spacing: 8px; margin-left: 8px; }
+    .cover-title-en { font-size: 20px; letter-spacing: 2px; }
+    .app-title-zh { font-size: 34px; letter-spacing: 12px; margin-left: 12px; }
+    .app-title-en { font-size: 13px; letter-spacing: 4px; }
+    .chapter { min-width: calc(50% - 4px); }
+    .modal-card { padding: 32px 22px; }
+    .modal-card::before { top: 10px; left: 10px; right: 10px; bottom: 10px; }
+    .entry { padding: 28px 22px; }
+    .date-inputs input { width: 68px; font-size: 20px; }
+    .date-label span { width: 68px; }
+    .section-title { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SETUP -->
+<div class="stage active" id="setupView">
+  <div class="stage-bg"></div>
+  <div class="cover-content">
+    <div class="ornament-top">
+      <div class="dash"></div>
+      <div class="diamond">◆  ◆  ◆</div>
+      <div class="dash"></div>
+    </div>
+    <div class="cover-label">First Edition · Setup</div>
+    <h1 class="cover-title-zh">致 · 妳</h1>
+    <div class="cover-title-sep"></div>
+    <div class="cover-title-en">A Love Letter<br><em>in Chapters</em></div>
+
+    <p class="cover-hint">first, whose birthday unlocks this book?</p>
+    <div class="date-label"><span>Year</span><span class="sp"></span><span>Month</span><span class="sp"></span><span>Day</span></div>
+    <div class="date-inputs">
+      <input type="tel" inputmode="numeric" id="sYear" placeholder="YYYY" maxlength="4">
+      <span class="sep">/</span>
+      <input type="tel" inputmode="numeric" id="sMonth" placeholder="MM" maxlength="2">
+      <span class="sep">/</span>
+      <input type="tel" inputmode="numeric" id="sDay" placeholder="DD" maxlength="2">
+    </div>
+    <button class="open-btn" id="setupBtn"><span>Save</span></button>
+    <div class="msg" id="setupMsg"></div>
+  </div>
+</div>
+
+<!-- LOCK -->
+<div class="stage" id="lockView">
+  <div class="stage-bg"></div>
+  <div class="cover-content">
+    <div class="ornament-top">
+      <div class="dash"></div>
+      <div class="diamond">◆  ◆  ◆</div>
+      <div class="dash"></div>
+    </div>
+    <div class="cover-label">For the one I love</div>
+    <div class="cover-title-zh">致 · 妳</div>
+    <div class="cover-title-sep"></div>
+    <div class="cover-title-en">A Love Letter<br><em>in Chapters</em></div>
+
+    <p class="cover-hint">your birthday opens this book</p>
+    <div class="date-label"><span>Year</span><span class="sp"></span><span>Month</span><span class="sp"></span><span>Day</span></div>
+    <div class="date-inputs">
+      <input type="tel" inputmode="numeric" id="bYear" placeholder="YYYY" maxlength="4">
+      <span class="sep">/</span>
+      <input type="tel" inputmode="numeric" id="bMonth" placeholder="MM" maxlength="2">
+      <span class="sep">/</span>
+      <input type="tel" inputmode="numeric" id="bDay" placeholder="DD" maxlength="2">
+    </div>
+    <button class="open-btn" id="unlockBtn"><span>Open the Book</span></button>
+    <div class="msg error" id="lockMsg"></div>
+    <p class="small-link">forgot? <a id="resetLink">reset birthday</a></p>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header class="app-header">
+    <div class="app-title-zh">致 · 妳</div>
+    <div class="app-title-en">A Love Letter in Chapters</div>
+  </header>
+
+  <nav class="chapters">
+    <button class="chapter active" data-cat="letters">
+      <span class="iconify chapter-icon" data-icon="ph:envelope-thin"></span>
+      <span class="chapter-num">Ch. I</span>
+      <div class="chapter-name-zh">寫給妳的信</div>
+      <div class="chapter-name-en">Letters</div>
+    </button>
+    <button class="chapter" data-cat="margins">
+      <span class="iconify chapter-icon" data-icon="ph:book-open-thin"></span>
+      <span class="chapter-num">Ch. II</span>
+      <div class="chapter-name-zh">書頁邊的字</div>
+      <div class="chapter-name-en">Margins</div>
+    </button>
+    <button class="chapter" data-cat="chronicles">
+      <span class="iconify chapter-icon" data-icon="ph:clock-countdown-thin"></span>
+      <span class="chapter-num">Ch. III</span>
+      <div class="chapter-name-zh">我們的編年史</div>
+      <div class="chapter-name-en">Chronicles</div>
+    </button>
+    <button class="chapter" data-cat="voices">
+      <span class="iconify chapter-icon" data-icon="ph:microphone-stage-thin"></span>
+      <span class="chapter-num">Ch. IV</span>
+      <div class="chapter-name-zh">孩子的聲音</div>
+      <div class="chapter-name-en">Voices</div>
+    </button>
+  </nav>
+
+  <main>
+    <div class="chapter-frontispiece fp-letters" id="frontispiece">
+      <div class="chapter-frontispiece-caption" id="frontispieceCaption">— with all my heart —</div>
+    </div>
+
+    <div id="voicesIntro" style="display:none;" class="voices-intro">
+      <div class="quote">"Mama, I love you."</div>
+      這一章收藏孩子寫給妳的祝福<br>
+      可以是一段話、一首歌、一聲笑，或只是呼喚妳的名字
+    </div>
+
+    <div class="section-header">
+      <div>
+        <h2 class="section-title" id="sectionTitle">Letters</h2>
+        <div class="section-count" id="sectionCount"></div>
+      </div>
+      <button class="new-btn" id="newBtn"><span class="iconify" data-icon="ph:feather-thin" style="margin-right:6px;"></span>New Entry</button>
+    </div>
+    <div id="entries"></div>
+  </main>
+</div>
+
+<!-- EDITOR -->
+<div class="modal" id="editor">
+  <div class="modal-card">
+    <div class="modal-title" id="editorTitle">A New Entry</div>
+    <div class="modal-subtitle" id="editorSubtitle">Chapter I · Letters</div>
+
+    <div class="field">
+      <label>Date · 日期</label>
+      <input type="date" id="fDate">
+    </div>
+    <div class="field">
+      <label>Title · 標題</label>
+      <input type="text" id="fTitle" placeholder="">
+    </div>
+    <div class="field">
+      <label>Story · 內容</label>
+      <textarea id="fBody" placeholder=""></textarea>
+    </div>
+    <div class="field">
+      <label>Memories · 圖片與聲音</label>
+      <div class="media-tools">
+        <button class="media-btn" id="addImgBtn"><span class="iconify" data-icon="ph:camera-thin"></span>圖片</button>
+        <button class="media-btn" id="recBtn"><span class="iconify" data-icon="ph:microphone-thin"></span>錄音</button>
+        <button class="media-btn" id="uploadAudioBtn"><span class="iconify" data-icon="ph:upload-simple-thin"></span>上傳聲音</button>
+        <input type="file" id="fImages" accept="image/*" multiple style="display:none">
+        <input type="file" id="fAudio" accept="audio/*" style="display:none">
+      </div>
+      <div class="media-preview" id="mediaPreview"></div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-secondary" id="cancelBtn">Cancel</button>
+      <button class="btn-primary" id="saveBtn">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const DB_NAME = 'dearYouBookDB';
+const DB_VERSION = 1;
+const STORE = 'entries';
+const SETTINGS_STORE = 'settings';
+let db = null;
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = (e) => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains(STORE)) {
+        const s = d.createObjectStore(STORE, { keyPath: 'id', autoIncrement: true });
+        s.createIndex('category', 'category', { unique: false });
+      }
+      if (!d.objectStoreNames.contains(SETTINGS_STORE)) {
+        d.createObjectStore(SETTINGS_STORE, { keyPath: 'key' });
+      }
+    };
+    req.onsuccess = () => { db = req.result; resolve(db); };
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function tx(s, m='readonly'){return db.transaction(s,m).objectStore(s);}
+
+async function getSetting(k){return new Promise(r=>{const q=tx(SETTINGS_STORE).get(k);q.onsuccess=()=>r(q.result?.value);q.onerror=()=>r(null);});}
+async function setSetting(k,v){return new Promise(r=>{const q=tx(SETTINGS_STORE,'readwrite').put({key:k,value:v});q.onsuccess=()=>r();});}
+async function delSetting(k){return new Promise(r=>{const q=tx(SETTINGS_STORE,'readwrite').delete(k);q.onsuccess=()=>r();});}
+
+async function getAllEntries(cat){
+  return new Promise(r=>{
+    const idx=tx(STORE).index('category');
+    const q=idx.getAll(cat);
+    q.onsuccess=()=>{const l=q.result||[];l.sort((a,b)=>(b.date||'').localeCompare(a.date||''));r(l);};
+  });
+}
+async function saveEntryToDB(e){return new Promise(r=>{const q=tx(STORE,'readwrite').put(e);q.onsuccess=()=>r(q.result);});}
+async function deleteEntryFromDB(id){return new Promise(r=>{const q=tx(STORE,'readwrite').delete(id);q.onsuccess=()=>r();});}
+async function getEntry(id){return new Promise(r=>{const q=tx(STORE).get(id);q.onsuccess=()=>r(q.result);});}
+
+function showView(name) {
+  document.getElementById('setupView').classList.toggle('active', name==='setup');
+  document.getElementById('lockView').classList.toggle('active', name==='lock');
+  if (name==='app') document.getElementById('app').classList.add('visible');
+  else document.getElementById('app').classList.remove('visible');
+}
+
+async function handleSetup() {
+  const y=document.getElementById('sYear').value.trim();
+  const m=document.getElementById('sMonth').value.trim();
+  const d=document.getElementById('sDay').value.trim();
+  const msg=document.getElementById('setupMsg');
+
+  if(!y||!m||!d){msg.textContent='please fill in all fields';msg.className='msg error';return;}
+  if(y.length!==4||parseInt(m)<1||parseInt(m)>12||parseInt(d)<1||parseInt(d)>31){
+    msg.textContent='hmm, check the date?';msg.className='msg error';return;
+  }
+
+  const val=`${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
+  await setSetting('birthday',val);
+  msg.textContent=`saved · ${val}`;
+  msg.className='msg success';
+
+  setTimeout(()=>{
+    showView('lock');
+    document.getElementById('bYear').value=y;
+    document.getElementById('bMonth').value=m.padStart(2,'0');
+    document.getElementById('bDay').value=d.padStart(2,'0');
+  }, 1400);
+}
+
+async function handleUnlock() {
+  const y=document.getElementById('bYear').value.trim();
+  const m=document.getElementById('bMonth').value.trim();
+  const d=document.getElementById('bDay').value.trim();
+  const msg=document.getElementById('lockMsg');
+
+  if(!y||!m||!d){msg.textContent='please fill in all fields';return;}
+
+  const input=`${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
+  const saved=await getSetting('birthday');
+
+  if(input===saved){
+    msg.textContent='';
+    showView('app');
+    loadEntries();
+  } else {
+    msg.textContent='try again ✦';
+    setTimeout(()=>{msg.textContent='';}, 2200);
+  }
+}
+
+async function handleReset() {
+  if(!confirm('重新設定生日？\n（所有日記內容都會保留）')) return;
+  await delSetting('birthday');
+  showView('setup');
+}
+
+let currentCategory='letters';
+let editingId=null;
+let draftImages=[];
+let draftAudios=[];
+let mediaRecorder=null;
+let recordChunks=[];
+
+const CATEGORY_LABELS = {
+  letters: { zh: '寫給妳的信', en: 'Letters', chNum: 'Chapter I' },
+  margins: { zh: '書頁邊的字', en: 'Margins', chNum: 'Chapter II' },
+  chronicles: { zh: '我們的編年史', en: 'Chronicles', chNum: 'Chapter III' },
+  voices: { zh: '孩子的聲音', en: 'Voices', chNum: 'Chapter IV' }
+};
+
+const CATEGORY_PLACEHOLDERS = {
+  letters: { title: 'dear you...', body: '親愛的，今天我想告訴妳...' },
+  margins: { title: 'from a book I\'m reading...', body: '讀到這一頁，忽然想起妳...' },
+  chronicles: { title: 'the day we...', body: '那一年，那一天，我們...' },
+  voices: { title: '孩子想說的話...', body: '（可以記下孩子說這段話時的心情，或當時的場景）' }
+};
+
+async function loadEntries() {
+  const list=await getAllEntries(currentCategory);
+  const container=document.getElementById('entries');
+  const countEl=document.getElementById('sectionCount');
+
+  countEl.textContent = list.length>0 ? `· ${list.length} ${list.length===1?'entry':'entries'}` : '';
+
+  if(list.length===0){
+    container.innerHTML=`<div class="empty-state">
+      <div class="mark">⁎</div>
+      <div class="msg-text">a blank page waits for you</div>
+    </div>`;
+    return;
+  }
+
+  const isVoices = currentCategory === 'voices';
+  container.innerHTML = list.map(e=>renderEntry(e, isVoices)).join('');
+}
+
+function renderEntry(e, isVoice=false){
+  const images=(e.images||[]).map(b=>{
+    const url=URL.createObjectURL(b);
+    return `<img src="${url}" loading="lazy">`;
+  }).join('');
+  const audios=(e.audios||[]).map(b=>{
+    const url=URL.createObjectURL(b);
+    return `<div class="entry-audio"><audio controls src="${url}"></audio></div>`;
+  }).join('');
+  const dateStr=e.date?formatDate(e.date):'';
+  const cls = isVoice ? 'entry voice-card' : 'entry';
+
+  return `
+    <article class="${cls}">
+      <div class="entry-meta">
+        <span class="entry-date">${dateStr}</span>
+        <span class="entry-actions">
+          <button onclick="editEntry(${e.id})"><span class="iconify" data-icon="ph:pencil-simple-thin"></span>edit</button>
+          <button onclick="confirmDelete(${e.id})"><span class="iconify" data-icon="ph:trash-thin"></span>remove</button>
+        </span>
+      </div>
+      ${e.title?`<h3 class="entry-title">${escapeHtml(e.title)}</h3>`:''}
+      ${e.body?`<div class="entry-body">${escapeHtml(e.body)}</div>`:''}
+      ${images?`<div class="entry-media">${images}</div>`:''}
+      ${audios||''}
+    </article>
+  `;
+}
+
+function escapeHtml(s){return(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+function formatDate(iso){
+  try{
+    const d=new Date(iso+'T00:00:00');
+    const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+  }catch{return iso;}
+}
+
+function openEditor(entry=null){
+  editingId=entry?.id??null;
+  const cat=CATEGORY_LABELS[currentCategory];
+  document.getElementById('editorTitle').textContent = entry ? 'Edit Entry' : 'A New Entry';
+  document.getElementById('editorSubtitle').textContent = `${cat.chNum} · ${cat.en}`;
+  document.getElementById('fDate').value=entry?.date||new Date().toISOString().slice(0,10);
+  document.getElementById('fTitle').value=entry?.title||'';
+  document.getElementById('fTitle').placeholder=CATEGORY_PLACEHOLDERS[currentCategory].title;
+  document.getElementById('fBody').value=entry?.body||'';
+  document.getElementById('fBody').placeholder=CATEGORY_PLACEHOLDERS[currentCategory].body;
+
+  draftImages.forEach(i=>URL.revokeObjectURL(i.url));
+  draftAudios.forEach(a=>URL.revokeObjectURL(a.url));
+  draftImages=[];
+  draftAudios=[];
+
+  if(entry){
+    (entry.images||[]).forEach(b=>draftImages.push({blob:b,url:URL.createObjectURL(b)}));
+    (entry.audios||[]).forEach(b=>draftAudios.push({blob:b,url:URL.createObjectURL(b)}));
+  }
+
+  renderMediaPreview();
+  document.getElementById('editor').classList.add('visible');
+}
+
+function closeEditor(){
+  document.getElementById('editor').classList.remove('visible');
+  if(mediaRecorder&&mediaRecorder.state==='recording') mediaRecorder.stop();
+  draftImages.forEach(i=>URL.revokeObjectURL(i.url));
+  draftAudios.forEach(a=>URL.revokeObjectURL(a.url));
+  draftImages=[];draftAudios=[];
+}
+
+async function editEntry(id){openEditor(await getEntry(id));}
+
+async function confirmDelete(id){
+  if(!confirm('確定要移除這一篇嗎？')) return;
+  await deleteEntryFromDB(id);
+  loadEntries();
+}
+
+async function saveEntry(){
+  const date=document.getElementById('fDate').value;
+  const title=document.getElementById('fTitle').value.trim();
+  const body=document.getElementById('fBody').value.trim();
+
+  if(!title&&!body&&draftImages.length===0&&draftAudios.length===0){
+    alert('please add something — words, an image, or a voice ✦');
+    return;
+  }
+
+  const entry={
+    category:currentCategory,
+    date:date||new Date().toISOString().slice(0,10),
+    title,body,
+    images:draftImages.map(i=>i.blob),
+    audios:draftAudios.map(a=>a.blob),
+    updatedAt:Date.now()
+  };
+  if(editingId){
+    entry.id=editingId;
+    const old=await getEntry(editingId);
+    entry.createdAt=old?.createdAt||Date.now();
+  } else {
+    entry.createdAt=Date.now();
+  }
+  await saveEntryToDB(entry);
+  closeEditor();
+  loadEntries();
+}
+
+function addImages(e){
+  Array.from(e.target.files).forEach(f=>{
+    draftImages.push({blob:f,url:URL.createObjectURL(f)});
+  });
+  e.target.value='';
+  renderMediaPreview();
+}
+
+function addAudioFile(e){
+  Array.from(e.target.files).forEach(f=>{
+    draftAudios.push({blob:f,url:URL.createObjectURL(f)});
+  });
+  e.target.value='';
+  renderMediaPreview();
+}
+
+function removeMedia(type,idx){
+  if(type==='image'){URL.revokeObjectURL(draftImages[idx].url);draftImages.splice(idx,1);}
+  else{URL.revokeObjectURL(draftAudios[idx].url);draftAudios.splice(idx,1);}
+  renderMediaPreview();
+}
+
+function renderMediaPreview(){
+  const wrap=document.getElementById('mediaPreview');
+  const imgs=draftImages.map((i,idx)=>`
+    <div class="media-chip">
+      <img src="${i.url}">
+      <button class="remove" onclick="removeMedia('image',${idx})">×</button>
+    </div>`).join('');
+  const auds=draftAudios.map((a,idx)=>`
+    <div class="media-chip">
+      <audio controls src="${a.url}"></audio>
+      <button class="remove" onclick="removeMedia('audio',${idx})">×</button>
+    </div>`).join('');
+  wrap.innerHTML=imgs+auds;
+}
+
+async function toggleRecord(){
+  const btn=document.getElementById('recBtn');
+  if(mediaRecorder&&mediaRecorder.state==='recording'){mediaRecorder.stop();return;}
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+    alert('此瀏覽器不支援直接錄音。\n可以用「上傳聲音」按鈕來加入錄好的檔案。');return;
+  }
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    let mimeType='';
+    if(typeof MediaRecorder!=='undefined'){
+      if(MediaRecorder.isTypeSupported('audio/webm'))mimeType='audio/webm';
+      else if(MediaRecorder.isTypeSupported('audio/mp4'))mimeType='audio/mp4';
+    }
+    mediaRecorder=mimeType?new MediaRecorder(stream,{mimeType}):new MediaRecorder(stream);
+    recordChunks=[];
+    mediaRecorder.ondataavailable=(e)=>{if(e.data.size>0)recordChunks.push(e.data);};
+    mediaRecorder.onstop=()=>{
+      const blob=new Blob(recordChunks,{type:mimeType||'audio/webm'});
+      draftAudios.push({blob,url:URL.createObjectURL(blob)});
+      renderMediaPreview();
+      stream.getTracks().forEach(t=>t.stop());
+      btn.innerHTML='<span class="iconify" data-icon="ph:microphone-thin"></span>錄音';
+      btn.classList.remove('recording');
+    };
+    mediaRecorder.start();
+    btn.innerHTML='<span class="iconify" data-icon="ph:stop-circle-thin"></span>停止';
+    btn.classList.add('recording');
+  }catch(err){
+    alert('無法啟用麥克風：'+err.message+'\n\n改用「↑ 上傳聲音」就可以了。');
+  }
+}
+
+(async function init(){
+  try{
+    try{await openDB();}
+    catch(err){
+      console.error('IndexedDB failed:', err);
+      const msg=document.getElementById('setupMsg');
+      if(msg){msg.textContent='儲存初始化失敗，功能受限';msg.className='msg error';}
+      return;
+    }
+
+    document.getElementById('setupBtn').addEventListener('click',handleSetup);
+    document.getElementById('unlockBtn').addEventListener('click',handleUnlock);
+    document.getElementById('resetLink').addEventListener('click',handleReset);
+    document.getElementById('newBtn').addEventListener('click',()=>openEditor());
+    document.getElementById('cancelBtn').addEventListener('click',closeEditor);
+    document.getElementById('saveBtn').addEventListener('click',saveEntry);
+    document.getElementById('addImgBtn').addEventListener('click',()=>document.getElementById('fImages').click());
+    document.getElementById('uploadAudioBtn').addEventListener('click',()=>document.getElementById('fAudio').click());
+    document.getElementById('recBtn').addEventListener('click',toggleRecord);
+    document.getElementById('fImages').addEventListener('change',addImages);
+    document.getElementById('fAudio').addEventListener('change',addAudioFile);
+
+    const FRONTISPIECE = {
+      letters:    { cls: 'fp-letters',    caption: '— with all my heart —' },
+      margins:    { cls: 'fp-margins',    caption: '— every page, I thought of you —' },
+      chronicles: { cls: 'fp-chronicles', caption: '— the days that made us —' },
+      voices:     { cls: 'fp-voices',     caption: '— voices for mama —' }
+    };
+
+    function updateFrontispiece(cat) {
+      const fp = document.getElementById('frontispiece');
+      const cap = document.getElementById('frontispieceCaption');
+      const data = FRONTISPIECE[cat];
+      fp.className = 'chapter-frontispiece ' + data.cls;
+      // Re-trigger fade animation
+      fp.style.animation = 'none';
+      fp.offsetHeight; // reflow
+      fp.style.animation = '';
+      cap.textContent = data.caption;
+    }
+
+    document.querySelectorAll('.chapter').forEach(t=>{
+      t.addEventListener('click',()=>{
+        document.querySelectorAll('.chapter').forEach(x=>x.classList.remove('active'));
+        t.classList.add('active');
+        currentCategory=t.dataset.cat;
+        const cat=CATEGORY_LABELS[currentCategory];
+        document.getElementById('sectionTitle').textContent=cat.en;
+        document.getElementById('voicesIntro').style.display = (currentCategory==='voices') ? 'block' : 'none';
+        updateFrontispiece(currentCategory);
+        loadEntries();
+      });
+    });
+
+    ['sYear','sMonth','sDay'].forEach(id=>{
+      document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter')handleSetup();});
+    });
+    ['bYear','bMonth','bDay'].forEach(id=>{
+      document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter')handleUnlock();});
+    });
+    document.getElementById('sYear').addEventListener('input',e=>{if(e.target.value.length>=4)document.getElementById('sMonth').focus();});
+    document.getElementById('sMonth').addEventListener('input',e=>{if(e.target.value.length>=2)document.getElementById('sDay').focus();});
+    document.getElementById('bYear').addEventListener('input',e=>{if(e.target.value.length>=4)document.getElementById('bMonth').focus();});
+    document.getElementById('bMonth').addEventListener('input',e=>{if(e.target.value.length>=2)document.getElementById('bDay').focus();});
+
+  const saved=await getSetting('birthday');
+  showView(saved?'lock':'setup');
+  }catch(err){
+    console.error('Init error:', err);
+    // Page is still visible because setup view is active by default
+  }
+})();
+</script>
+
+</body>
+</html>
