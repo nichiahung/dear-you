@@ -364,6 +364,122 @@
   }
 
   /* ============================================
+     DEDICATION PAGE — the private page between cover and chapters
+  ============================================ */
+  .dedication-content {
+    max-width: 560px;
+    width: 100%;
+    text-align: center;
+    position: relative;
+    z-index: 2;
+    padding: 80px 40px;
+  }
+
+  .dedication-ornament {
+    font-size: 14px;
+    color: var(--gold);
+    letter-spacing: 8px;
+    margin-bottom: 40px;
+    opacity: 0;
+    animation: fadeUp 1.2s 0.3s ease forwards;
+  }
+
+  .dedication-to {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 28px;
+    color: var(--mauve);
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    opacity: 0;
+    animation: fadeUp 1.4s 0.8s ease forwards;
+  }
+
+  .dedication-name {
+    font-family: 'Pinyon Script', cursive;
+    font-weight: 400;
+    font-size: 76px;
+    line-height: 1;
+    color: var(--rose-deep);
+    margin-bottom: 36px;
+    letter-spacing: 2px;
+    opacity: 0;
+    animation: fadeUp 2s 1.4s ease forwards;
+  }
+
+  .dedication-divider {
+    width: 80px;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold), transparent);
+    margin: 0 auto 40px;
+    opacity: 0;
+    animation: fadeUp 1s 2.4s ease forwards;
+  }
+
+  .dedication-poem-en {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: 22px;
+    line-height: 1.9;
+    color: var(--ink);
+    letter-spacing: 1px;
+    margin-bottom: 28px;
+    opacity: 0;
+    animation: fadeUp 1.8s 2.9s ease forwards;
+  }
+
+  .dedication-poem-zh {
+    font-family: 'Noto Serif TC', serif;
+    font-weight: 300;
+    font-size: 17px;
+    line-height: 2.2;
+    color: var(--ink-soft);
+    letter-spacing: 4px;
+    margin-bottom: 48px;
+    opacity: 0;
+    animation: fadeUp 1.8s 3.6s ease forwards;
+  }
+
+  .dedication-sign {
+    font-family: 'Pinyon Script', cursive;
+    font-size: 24px;
+    color: var(--mauve);
+    margin-bottom: 56px;
+    letter-spacing: 1px;
+    opacity: 0;
+    animation: fadeUp 1.4s 4.3s ease forwards;
+  }
+
+  .dedication-continue {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 14px;
+    background: transparent;
+    border: 1px solid var(--ink-faded);
+    color: var(--ink-soft);
+    padding: 12px 32px;
+    border-radius: 0;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    opacity: 0;
+    animation: fadeUp 1.4s 4.8s ease forwards;
+  }
+
+  .dedication-continue:hover,
+  .dedication-continue:active {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+
+  /* ============================================
      MAIN APP
   ============================================ */
   #app {
@@ -396,14 +512,25 @@
     background: linear-gradient(to right, transparent, var(--gold), transparent);
   }
 
+  .app-header-greeting {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 16px;
+    letter-spacing: 5px;
+    color: var(--mauve);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
   .app-title-zh {
-    font-family: 'Noto Serif TC', serif;
-    font-weight: 200;
-    font-size: 48px;
-    letter-spacing: 18px;
-    margin-left: 18px;
-    color: var(--ink);
-    margin-bottom: 12px;
+    font-family: 'Pinyon Script', cursive;
+    font-weight: 400;
+    font-size: 72px;
+    line-height: 1;
+    color: var(--rose-deep);
+    margin-bottom: 16px;
+    letter-spacing: 1px;
   }
 
   .app-title-en {
@@ -581,6 +708,19 @@
     text-transform: uppercase;
   }
 
+  .cloud-status {
+    font-family: 'Cormorant Garamond', 'Noto Serif TC', serif;
+    font-style: italic;
+    font-size: 12px;
+    color: var(--ink-faded);
+    letter-spacing: 2px;
+    margin-top: 4px;
+  }
+
+  .cloud-status.error {
+    color: var(--rose-deep);
+  }
+
   .new-btn {
     font-family: 'Cormorant Garamond', serif;
     font-style: italic;
@@ -649,7 +789,6 @@
     font-family: 'Cormorant Garamond', serif;
     font-style: italic;
     font-size: 14px;
-    margin-left: 12px;
     letter-spacing: 2px;
     transition: color 0.2s;
     display: inline-flex;
@@ -657,8 +796,34 @@
     gap: 4px;
   }
 
+  .entry-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 18px;
+    line-height: 1;
+  }
+
+  .entry-actions .iconify {
+    font-size: 16px;
+    flex: 0 0 auto;
+  }
+
   .entry-actions button:hover,
   .entry-actions button:active { color: var(--rose-deep); }
+
+  .entry-source {
+    color: var(--ink-faded);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+    opacity: 0.78;
+  }
+
+  .entry-source.cloud { color: var(--gold); }
+  .entry-source.local { color: var(--ink-faded); }
 
   .entry-title {
     font-family: 'Cormorant Garamond', 'Noto Serif TC', serif;
@@ -998,8 +1163,11 @@
   @media (max-width: 640px) {
     .cover-title-zh { font-size: 64px; letter-spacing: 8px; margin-left: 8px; }
     .cover-title-en { font-size: 20px; letter-spacing: 2px; }
-    .app-title-zh { font-size: 34px; letter-spacing: 12px; margin-left: 12px; }
+    .app-title-zh { font-size: 56px; }
     .app-title-en { font-size: 13px; letter-spacing: 4px; }
+    .dedication-name { font-size: 56px; }
+    .dedication-poem-en { font-size: 18px; }
+    .dedication-poem-zh { font-size: 15px; letter-spacing: 2px; }
     .chapter { min-width: calc(50% - 4px); }
     .modal-card { padding: 32px 22px; }
     .modal-card::before { top: 10px; left: 10px; right: 10px; bottom: 10px; }
@@ -1012,36 +1180,8 @@
 </head>
 <body>
 
-<!-- SETUP -->
-<div class="stage active" id="setupView">
-  <div class="stage-bg"></div>
-  <div class="cover-content">
-    <div class="ornament-top">
-      <div class="dash"></div>
-      <div class="diamond">◆  ◆  ◆</div>
-      <div class="dash"></div>
-    </div>
-    <div class="cover-label">First Edition · Setup</div>
-    <h1 class="cover-title-zh">致 · 妳</h1>
-    <div class="cover-title-sep"></div>
-    <div class="cover-title-en">A Love Letter<br><em>in Chapters</em></div>
-
-    <p class="cover-hint">first, whose birthday unlocks this book?</p>
-    <div class="date-label"><span>Year</span><span class="sp"></span><span>Month</span><span class="sp"></span><span>Day</span></div>
-    <div class="date-inputs">
-      <input type="tel" inputmode="numeric" id="sYear" placeholder="YYYY" maxlength="4">
-      <span class="sep">/</span>
-      <input type="tel" inputmode="numeric" id="sMonth" placeholder="MM" maxlength="2">
-      <span class="sep">/</span>
-      <input type="tel" inputmode="numeric" id="sDay" placeholder="DD" maxlength="2">
-    </div>
-    <button class="open-btn" id="setupBtn"><span>Save</span></button>
-    <div class="msg" id="setupMsg"></div>
-  </div>
-</div>
-
 <!-- LOCK -->
-<div class="stage" id="lockView">
+<div class="stage active" id="lockView">
   <div class="stage-bg"></div>
   <div class="cover-content">
     <div class="ornament-top">
@@ -1065,14 +1205,39 @@
     </div>
     <button class="open-btn" id="unlockBtn"><span>Open the Book</span></button>
     <div class="msg error" id="lockMsg"></div>
-    <p class="small-link">forgot? <a id="resetLink">reset birthday</a></p>
+  </div>
+</div>
+
+<!-- DEDICATION PAGE -->
+<div class="stage" id="dedicationView">
+  <div class="dedication-content">
+    <div class="dedication-ornament">◆</div>
+    <div class="dedication-to">To</div>
+    <h2 class="dedication-name">Marlene</h2>
+    <div class="dedication-divider"></div>
+    <div class="dedication-poem-en">
+      <em>my first thought in the morning,<br>
+      my last breath at night,<br>
+      and every quiet moment between.</em>
+    </div>
+    <div class="dedication-poem-zh">
+      我清晨的第一個念頭，<br>
+      夜裡的最後一次呼吸，<br>
+      以及之間所有靜謐的瞬間。
+    </div>
+    <div class="dedication-sign">— with all my love —</div>
+    <button class="dedication-continue" id="continueBtn">
+      <span>turn the page</span>
+      <span class="iconify" data-icon="ph:arrow-right-thin" style="margin-left:10px;"></span>
+    </button>
   </div>
 </div>
 
 <!-- APP -->
 <div id="app">
   <header class="app-header">
-    <div class="app-title-zh">致 · 妳</div>
+    <div class="app-header-greeting">Dearest</div>
+    <div class="app-title-zh">Marlene</div>
     <div class="app-title-en">A Love Letter in Chapters</div>
   </header>
 
@@ -1118,6 +1283,7 @@
       <div>
         <h2 class="section-title" id="sectionTitle">Letters</h2>
         <div class="section-count" id="sectionCount"></div>
+        <div class="cloud-status" id="cloudStatus">syncing...</div>
       </div>
       <button class="new-btn" id="newBtn"><span class="iconify" data-icon="ph:feather-thin" style="margin-right:6px;"></span>New Entry</button>
     </div>
@@ -1162,12 +1328,233 @@
   </div>
 </div>
 
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+import { getAnalytics, isSupported } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-analytics.js";
+import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
+import {
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  getFirestore,
+  query,
+  setDoc,
+  where
+} from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+import {
+  deleteObject,
+  getDownloadURL,
+  getStorage,
+  ref,
+  uploadBytes
+} from "https://www.gstatic.com/firebasejs/12.7.0/firebase-storage.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCe3kmMwYZ4_v9L_0xnetosfWYM9UeoN9A",
+  authDomain: "dearyou-bfffc.firebaseapp.com",
+  projectId: "dearyou-bfffc",
+  storageBucket: "dearyou-bfffc.firebasestorage.app",
+  messagingSenderId: "290995743342",
+  appId: "1:290995743342:web:aba96f0bc727af9bb1147f",
+  measurementId: "G-JSR7N4FBSV"
+};
+
+const app = initializeApp(firebaseConfig);
+const analytics = await isSupported().then((supported) => supported ? getAnalytics(app) : null);
+const auth = getAuth(app);
+const firestore = getFirestore(app);
+const storage = getStorage(app);
+const SHARED_BOOK_ID = "dear-you";
+
+const authReady = new Promise((resolve, reject) => {
+  const unsub = onAuthStateChanged(auth, (user) => {
+    if (user) {
+      unsub();
+      resolve(user);
+    }
+  }, reject);
+
+  if (!auth.currentUser) {
+    signInAnonymously(auth).catch(reject);
+  }
+});
+
+function entriesCollection() {
+  return collection(firestore, "books", SHARED_BOOK_ID, "entries");
+}
+
+function entryDocument(id) {
+  return doc(firestore, "books", SHARED_BOOK_ID, "entries", id);
+}
+
+function settingDocument(key) {
+  return doc(firestore, "books", SHARED_BOOK_ID, "settings", key);
+}
+
+function cleanMediaItem(item) {
+  return {
+    path: item.path,
+    url: item.url,
+    contentType: item.contentType || null,
+    size: typeof item.size === "number" ? item.size : null,
+    name: item.name || null
+  };
+}
+
+function blobExtension(blob) {
+  const type = blob?.type || "";
+  if (type.includes("png")) return "png";
+  if (type.includes("gif")) return "gif";
+  if (type.includes("webp")) return "webp";
+  if (type.includes("jpeg") || type.includes("jpg")) return "jpg";
+  if (type.includes("mp4")) return "m4a";
+  if (type.includes("mpeg")) return "mp3";
+  if (type.includes("wav")) return "wav";
+  if (type.includes("ogg")) return "ogg";
+  if (type.includes("webm")) return "webm";
+  return "bin";
+}
+
+async function uploadMedia(entryId, kind, item, index) {
+  if (item?.path && item?.url) return cleanMediaItem(item);
+
+  const blob = item?.blob || item;
+  if (!(blob instanceof Blob)) return null;
+
+  const ext = blobExtension(blob);
+  const path = `books/${SHARED_BOOK_ID}/entries/${entryId}/${kind}/${Date.now()}-${index}.${ext}`;
+  const fileRef = ref(storage, path);
+  await uploadBytes(fileRef, blob, { contentType: blob.type || "application/octet-stream" });
+  const url = await getDownloadURL(fileRef);
+
+  return cleanMediaItem({
+    path,
+    url,
+    contentType: blob.type || "application/octet-stream",
+    size: blob.size || 0,
+    name: item?.name || null
+  });
+}
+
+async function deleteStoredMedia(media) {
+  if (!media?.path) return;
+  try {
+    await deleteObject(ref(storage, media.path));
+  } catch (err) {
+    console.warn("Unable to delete stored media:", err);
+  }
+}
+
+function normalizeEntry(id, data) {
+  return {
+    id,
+    category: data.category || "letters",
+    date: data.date || "",
+    title: data.title || "",
+    body: data.body || "",
+    images: Array.isArray(data.images) ? data.images : [],
+    audios: Array.isArray(data.audios) ? data.audios : [],
+    createdAt: data.createdAt || Date.now(),
+    updatedAt: data.updatedAt || Date.now(),
+    legacyLocalId: data.legacyLocalId || null,
+    source: "cloud"
+  };
+}
+
+const ready = authReady.then((user) => ({ user, uid: user.uid }));
+
+async function listEntries(category) {
+  await ready;
+  const snapshot = await getDocs(query(entriesCollection(), where("category", "==", category)));
+  return snapshot.docs
+    .map((entry) => normalizeEntry(entry.id, entry.data()))
+    .sort((a, b) => (b.date || "").localeCompare(a.date || "") || (b.updatedAt || 0) - (a.updatedAt || 0));
+}
+
+async function getEntry(id) {
+  await ready;
+  const snapshot = await getDoc(entryDocument(String(id)));
+  return snapshot.exists() ? normalizeEntry(snapshot.id, snapshot.data()) : null;
+}
+
+async function saveEntry(entry) {
+  await ready;
+  const id = entry.id ? String(entry.id) : doc(entriesCollection()).id;
+  const previous = entry.id ? await getEntry(id) : null;
+  const images = (await Promise.all((entry.images || []).map((item, index) => uploadMedia(id, "images", item, index)))).filter(Boolean);
+  const audios = (await Promise.all((entry.audios || []).map((item, index) => uploadMedia(id, "audios", item, index)))).filter(Boolean);
+  const keepPaths = new Set([...images, ...audios].map((item) => item.path).filter(Boolean));
+
+  await setDoc(entryDocument(id), {
+    category: entry.category,
+    date: entry.date,
+    title: entry.title,
+    body: entry.body,
+    images,
+    audios,
+    createdAt: entry.createdAt || previous?.createdAt || Date.now(),
+    updatedAt: Date.now(),
+    legacyLocalId: entry.legacyLocalId || previous?.legacyLocalId || null,
+    bookId: SHARED_BOOK_ID
+  });
+
+  [...(previous?.images || []), ...(previous?.audios || [])]
+    .filter((item) => item.path && !keepPaths.has(item.path))
+    .forEach((item) => deleteStoredMedia(item));
+
+  return id;
+}
+
+async function deleteEntry(id) {
+  const entry = await getEntry(String(id));
+  if (entry) {
+    await Promise.all([...(entry.images || []), ...(entry.audios || [])].map(deleteStoredMedia));
+  }
+
+  await ready;
+  await deleteDoc(entryDocument(String(id)));
+}
+
+async function getSetting(key) {
+  await ready;
+  const snapshot = await getDoc(settingDocument(key));
+  return snapshot.exists() ? snapshot.data().value : null;
+}
+
+async function setSetting(key, value) {
+  await ready;
+  await setDoc(settingDocument(key), { value, updatedAt: Date.now(), bookId: SHARED_BOOK_ID });
+}
+
+async function deleteSetting(key) {
+  await ready;
+  await deleteDoc(settingDocument(key));
+}
+
+window.dearYouFirebase = { app, analytics, auth, firestore, storage, config: firebaseConfig };
+window.dearYouCloud = {
+  bookId: SHARED_BOOK_ID,
+  ready,
+  listEntries,
+  getEntry,
+  saveEntry,
+  deleteEntry,
+  getSetting,
+  setSetting,
+  deleteSetting
+};
+window.dispatchEvent(new Event("dearYouCloudReady"));
+</script>
+
 <script>
 const DB_NAME = 'dearYouBookDB';
 const DB_VERSION = 1;
 const STORE = 'entries';
 const SETTINGS_STORE = 'settings';
 let db = null;
+let cloudAvailable = false;
 
 function openDB() {
   return new Promise((resolve, reject) => {
@@ -1189,51 +1576,161 @@ function openDB() {
 
 function tx(s, m='readonly'){return db.transaction(s,m).objectStore(s);}
 
-async function getSetting(k){return new Promise(r=>{const q=tx(SETTINGS_STORE).get(k);q.onsuccess=()=>r(q.result?.value);q.onerror=()=>r(null);});}
-async function setSetting(k,v){return new Promise(r=>{const q=tx(SETTINGS_STORE,'readwrite').put({key:k,value:v});q.onsuccess=()=>r();});}
-async function delSetting(k){return new Promise(r=>{const q=tx(SETTINGS_STORE,'readwrite').delete(k);q.onsuccess=()=>r();});}
+async function getLocalSetting(k){return new Promise(r=>{const q=tx(SETTINGS_STORE).get(k);q.onsuccess=()=>r(q.result?.value);q.onerror=()=>r(null);});}
+async function setLocalSetting(k,v){return new Promise(r=>{const q=tx(SETTINGS_STORE,'readwrite').put({key:k,value:v});q.onsuccess=()=>r();});}
+async function delLocalSetting(k){return new Promise(r=>{const q=tx(SETTINGS_STORE,'readwrite').delete(k);q.onsuccess=()=>r();});}
 
-async function getAllEntries(cat){
+async function getLocalAllEntries(cat){
   return new Promise(r=>{
     const idx=tx(STORE).index('category');
     const q=idx.getAll(cat);
     q.onsuccess=()=>{const l=q.result||[];l.sort((a,b)=>(b.date||'').localeCompare(a.date||''));r(l);};
   });
 }
-async function saveEntryToDB(e){return new Promise(r=>{const q=tx(STORE,'readwrite').put(e);q.onsuccess=()=>r(q.result);});}
-async function deleteEntryFromDB(id){return new Promise(r=>{const q=tx(STORE,'readwrite').delete(id);q.onsuccess=()=>r();});}
-async function getEntry(id){return new Promise(r=>{const q=tx(STORE).get(id);q.onsuccess=()=>r(q.result);});}
+async function saveLocalEntry(e){return new Promise(r=>{const q=tx(STORE,'readwrite').put(e);q.onsuccess=()=>r(q.result);});}
+async function deleteLocalEntry(id){return new Promise(r=>{const q=tx(STORE,'readwrite').delete(id);q.onsuccess=()=>r();});}
+async function getLocalEntry(id){return new Promise(r=>{const q=tx(STORE).get(id);q.onsuccess=()=>r(q.result);});}
+
+function setCloudStatus(text, error=false) {
+  const el = document.getElementById('cloudStatus');
+  if (!el) return;
+  el.textContent = text;
+  el.classList.toggle('error', error);
+}
+
+function isLocalEntryId(id) {
+  return typeof id === 'number' || /^\d+$/.test(String(id));
+}
+
+function asDraftMedia(item) {
+  if (item?.path && item?.url) return { ...item, cloud: true };
+  if (item instanceof Blob) return { blob: item };
+  return item;
+}
+
+function waitForCloudBridge() {
+  if (window.dearYouCloud) return Promise.resolve(window.dearYouCloud);
+
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      window.removeEventListener('dearYouCloudReady', handleReady);
+      reject(new Error('Firebase module did not initialize in time'));
+    }, 10000);
+
+    function handleReady() {
+      clearTimeout(timer);
+      resolve(window.dearYouCloud);
+    }
+
+    window.addEventListener('dearYouCloudReady', handleReady, { once: true });
+  });
+}
+
+async function migrateLocalDataToCloud() {
+  const cloud = window.dearYouCloud;
+  await cloud.ready;
+  const migratedKey = `firebaseMigrated:dearyou-bfffc:shared:${cloud.bookId}`;
+  if (await getLocalSetting(migratedKey)) return;
+
+  const existing = [];
+  for (const cat of Object.keys(CATEGORY_LABELS)) {
+    existing.push(...await cloud.listEntries(cat));
+  }
+  const migratedLegacyIds = new Set(existing.map(e=>e.legacyLocalId).filter(Boolean));
+
+  for (const cat of Object.keys(CATEGORY_LABELS)) {
+    const localEntries = await getLocalAllEntries(cat);
+    for (const entry of localEntries) {
+      const legacyLocalId = `${entry.category || cat}:${entry.id}`;
+      if (migratedLegacyIds.has(legacyLocalId)) continue;
+
+      await cloud.saveEntry({
+        category: entry.category || cat,
+        date: entry.date || new Date().toISOString().slice(0,10),
+        title: entry.title || '',
+        body: entry.body || '',
+        images: (entry.images || []).map(asDraftMedia),
+        audios: (entry.audios || []).map(asDraftMedia),
+        createdAt: entry.createdAt || Date.now(),
+        updatedAt: entry.updatedAt || Date.now(),
+        legacyLocalId
+      });
+    }
+  }
+
+  await setLocalSetting(migratedKey, Date.now());
+}
+
+async function initCloudStore() {
+  try {
+    const cloud = await waitForCloudBridge();
+    await cloud.ready;
+    cloudAvailable = true;
+    setCloudStatus('synced to cloud');
+    migrateLocalDataToCloud().catch((err) => {
+      console.warn('Local data migration skipped:', err);
+      setCloudStatus('synced to cloud - local import skipped', true);
+    });
+  } catch (err) {
+    cloudAvailable = false;
+    console.error('Firebase cloud sync unavailable:', err);
+    setCloudStatus(`local only - ${err.code || err.message || 'Firebase unavailable'}`, true);
+  }
+}
+
+async function getSetting(k){
+  if (!cloudAvailable) return getLocalSetting(k);
+  try { return await window.dearYouCloud.getSetting(k); }
+  catch(err){ console.error(err); setCloudStatus('local only - cloud read failed', true); return getLocalSetting(k); }
+}
+async function setSetting(k,v){
+  await setLocalSetting(k,v);
+  if (!cloudAvailable) return;
+  try { await window.dearYouCloud.setSetting(k,v); setCloudStatus('synced to cloud'); }
+  catch(err){ console.error(err); setCloudStatus('saved locally - cloud write failed', true); }
+}
+async function delSetting(k){
+  await delLocalSetting(k);
+  if (!cloudAvailable) return;
+  try { await window.dearYouCloud.deleteSetting(k); setCloudStatus('synced to cloud'); }
+  catch(err){ console.error(err); setCloudStatus('removed locally - cloud delete failed', true); }
+}
+async function getAllEntries(cat){
+  if (!cloudAvailable) return getLocalAllEntries(cat);
+  try { const entries = await window.dearYouCloud.listEntries(cat); setCloudStatus('synced to cloud'); return entries; }
+  catch(err){ console.error(err); setCloudStatus('local only - cloud read failed', true); return getLocalAllEntries(cat); }
+}
+async function saveEntryToDB(e){
+  const localCopy = {
+    ...e,
+    images: (e.images || []).map(item=>item.blob || item).filter(Boolean),
+    audios: (e.audios || []).map(item=>item.blob || item).filter(Boolean)
+  };
+  if (!e.id || isLocalEntryId(e.id)) await saveLocalEntry(localCopy);
+  if (!cloudAvailable) return e.id || localCopy.id;
+  try { const id = await window.dearYouCloud.saveEntry(e); setCloudStatus('synced to cloud'); return id; }
+  catch(err){ console.error(err); setCloudStatus('saved locally - cloud write failed', true); return e.id || localCopy.id; }
+}
+async function deleteEntryFromDB(id){
+  if (isLocalEntryId(id)) await deleteLocalEntry(id);
+  if (!cloudAvailable) return;
+  try { await window.dearYouCloud.deleteEntry(id); setCloudStatus('synced to cloud'); }
+  catch(err){ console.error(err); setCloudStatus('removed locally - cloud delete failed', true); }
+}
+async function getEntry(id){
+  if (!cloudAvailable) return getLocalEntry(id);
+  try { return await window.dearYouCloud.getEntry(id); }
+  catch(err){ console.error(err); setCloudStatus('local only - cloud read failed', true); return isLocalEntryId(id) ? getLocalEntry(id) : null; }
+}
 
 function showView(name) {
-  document.getElementById('setupView').classList.toggle('active', name==='setup');
   document.getElementById('lockView').classList.toggle('active', name==='lock');
+  document.getElementById('dedicationView').classList.toggle('active', name==='dedication');
   if (name==='app') document.getElementById('app').classList.add('visible');
   else document.getElementById('app').classList.remove('visible');
 }
 
-async function handleSetup() {
-  const y=document.getElementById('sYear').value.trim();
-  const m=document.getElementById('sMonth').value.trim();
-  const d=document.getElementById('sDay').value.trim();
-  const msg=document.getElementById('setupMsg');
-
-  if(!y||!m||!d){msg.textContent='please fill in all fields';msg.className='msg error';return;}
-  if(y.length!==4||parseInt(m)<1||parseInt(m)>12||parseInt(d)<1||parseInt(d)>31){
-    msg.textContent='hmm, check the date?';msg.className='msg error';return;
-  }
-
-  const val=`${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
-  await setSetting('birthday',val);
-  msg.textContent=`saved · ${val}`;
-  msg.className='msg success';
-
-  setTimeout(()=>{
-    showView('lock');
-    document.getElementById('bYear').value=y;
-    document.getElementById('bMonth').value=m.padStart(2,'0');
-    document.getElementById('bDay').value=d.padStart(2,'0');
-  }, 1400);
-}
+const MARLENE_BIRTHDAY = '1985-05-06';
 
 async function handleUnlock() {
   const y=document.getElementById('bYear').value.trim();
@@ -1244,22 +1741,19 @@ async function handleUnlock() {
   if(!y||!m||!d){msg.textContent='please fill in all fields';return;}
 
   const input=`${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
-  const saved=await getSetting('birthday');
 
-  if(input===saved){
+  if(input===MARLENE_BIRTHDAY){
     msg.textContent='';
-    showView('app');
-    loadEntries();
+    showView('dedication');
   } else {
     msg.textContent='try again ✦';
     setTimeout(()=>{msg.textContent='';}, 2200);
   }
 }
 
-async function handleReset() {
-  if(!confirm('重新設定生日？\n（所有日記內容都會保留）')) return;
-  await delSetting('birthday');
-  showView('setup');
+function continueToBook(){
+  showView('app');
+  loadEntries();
 }
 
 let currentCategory='letters';
@@ -1304,23 +1798,33 @@ async function loadEntries() {
 
 function renderEntry(e, isVoice=false){
   const images=(e.images||[]).map(b=>{
-    const url=URL.createObjectURL(b);
+    const blob=b?.blob || b;
+    const url=b?.url || (blob instanceof Blob ? URL.createObjectURL(blob) : '');
+    if(!url) return '';
     return `<img src="${url}" loading="lazy">`;
   }).join('');
   const audios=(e.audios||[]).map(b=>{
-    const url=URL.createObjectURL(b);
+    const blob=b?.blob || b;
+    const url=b?.url || (blob instanceof Blob ? URL.createObjectURL(blob) : '');
+    if(!url) return '';
     return `<div class="entry-audio"><audio controls src="${url}"></audio></div>`;
   }).join('');
   const dateStr=e.date?formatDate(e.date):'';
   const cls = isVoice ? 'entry voice-card' : 'entry';
+  const entryId = String(e.id);
+  const isCloudEntry = e.source === 'cloud' || !isLocalEntryId(e.id);
+  const sourceIcon = isCloudEntry
+    ? '<span class="iconify entry-source cloud" data-icon="ph:cloud-thin" title="Cloud"></span>'
+    : '<span class="iconify entry-source local" data-icon="ph:bookmark-simple-thin" title="Local only"></span>';
 
   return `
     <article class="${cls}">
       <div class="entry-meta">
         <span class="entry-date">${dateStr}</span>
         <span class="entry-actions">
-          <button onclick="editEntry(${e.id})"><span class="iconify" data-icon="ph:pencil-simple-thin"></span>edit</button>
-          <button onclick="confirmDelete(${e.id})"><span class="iconify" data-icon="ph:trash-thin"></span>remove</button>
+          ${sourceIcon}
+          <button onclick="editEntry('${entryId}')"><span class="iconify" data-icon="ph:pencil-simple-thin"></span>edit</button>
+          <button onclick="confirmDelete('${entryId}')"><span class="iconify" data-icon="ph:trash-thin"></span>remove</button>
         </span>
       </div>
       ${e.title?`<h3 class="entry-title">${escapeHtml(e.title)}</h3>`:''}
@@ -1358,8 +1862,14 @@ function openEditor(entry=null){
   draftAudios=[];
 
   if(entry){
-    (entry.images||[]).forEach(b=>draftImages.push({blob:b,url:URL.createObjectURL(b)}));
-    (entry.audios||[]).forEach(b=>draftAudios.push({blob:b,url:URL.createObjectURL(b)}));
+    (entry.images||[]).forEach(b=>{
+      if(b?.path&&b?.url) draftImages.push({...b,cloud:true});
+      else if(b instanceof Blob) draftImages.push({blob:b,url:URL.createObjectURL(b)});
+    });
+    (entry.audios||[]).forEach(b=>{
+      if(b?.path&&b?.url) draftAudios.push({...b,cloud:true});
+      else if(b instanceof Blob) draftAudios.push({blob:b,url:URL.createObjectURL(b)});
+    });
   }
 
   renderMediaPreview();
@@ -1369,8 +1879,8 @@ function openEditor(entry=null){
 function closeEditor(){
   document.getElementById('editor').classList.remove('visible');
   if(mediaRecorder&&mediaRecorder.state==='recording') mediaRecorder.stop();
-  draftImages.forEach(i=>URL.revokeObjectURL(i.url));
-  draftAudios.forEach(a=>URL.revokeObjectURL(a.url));
+  draftImages.forEach(i=>{if(i.blob&&i.url)URL.revokeObjectURL(i.url);});
+  draftAudios.forEach(a=>{if(a.blob&&a.url)URL.revokeObjectURL(a.url);});
   draftImages=[];draftAudios=[];
 }
 
@@ -1396,8 +1906,8 @@ async function saveEntry(){
     category:currentCategory,
     date:date||new Date().toISOString().slice(0,10),
     title,body,
-    images:draftImages.map(i=>i.blob),
-    audios:draftAudios.map(a=>a.blob),
+    images:draftImages,
+    audios:draftAudios,
     updatedAt:Date.now()
   };
   if(editingId){
@@ -1414,7 +1924,7 @@ async function saveEntry(){
 
 function addImages(e){
   Array.from(e.target.files).forEach(f=>{
-    draftImages.push({blob:f,url:URL.createObjectURL(f)});
+    draftImages.push({blob:f,url:URL.createObjectURL(f),name:f.name});
   });
   e.target.value='';
   renderMediaPreview();
@@ -1422,15 +1932,21 @@ function addImages(e){
 
 function addAudioFile(e){
   Array.from(e.target.files).forEach(f=>{
-    draftAudios.push({blob:f,url:URL.createObjectURL(f)});
+    draftAudios.push({blob:f,url:URL.createObjectURL(f),name:f.name});
   });
   e.target.value='';
   renderMediaPreview();
 }
 
 function removeMedia(type,idx){
-  if(type==='image'){URL.revokeObjectURL(draftImages[idx].url);draftImages.splice(idx,1);}
-  else{URL.revokeObjectURL(draftAudios[idx].url);draftAudios.splice(idx,1);}
+  if(type==='image'){
+    if(draftImages[idx].blob&&draftImages[idx].url)URL.revokeObjectURL(draftImages[idx].url);
+    draftImages.splice(idx,1);
+  }
+  else{
+    if(draftAudios[idx].blob&&draftAudios[idx].url)URL.revokeObjectURL(draftAudios[idx].url);
+    draftAudios.splice(idx,1);
+  }
   renderMediaPreview();
 }
 
@@ -1486,14 +2002,14 @@ async function toggleRecord(){
     try{await openDB();}
     catch(err){
       console.error('IndexedDB failed:', err);
-      const msg=document.getElementById('setupMsg');
-      if(msg){msg.textContent='儲存初始化失敗，功能受限';msg.className='msg error';}
+      const msg=document.getElementById('lockMsg');
+      if(msg){msg.textContent='儲存初始化失敗，功能受限';}
       return;
     }
+    await initCloudStore();
 
-    document.getElementById('setupBtn').addEventListener('click',handleSetup);
     document.getElementById('unlockBtn').addEventListener('click',handleUnlock);
-    document.getElementById('resetLink').addEventListener('click',handleReset);
+    document.getElementById('continueBtn').addEventListener('click',continueToBook);
     document.getElementById('newBtn').addEventListener('click',()=>openEditor());
     document.getElementById('cancelBtn').addEventListener('click',closeEditor);
     document.getElementById('saveBtn').addEventListener('click',saveEntry);
@@ -1535,22 +2051,15 @@ async function toggleRecord(){
       });
     });
 
-    ['sYear','sMonth','sDay'].forEach(id=>{
-      document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter')handleSetup();});
-    });
     ['bYear','bMonth','bDay'].forEach(id=>{
       document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter')handleUnlock();});
     });
-    document.getElementById('sYear').addEventListener('input',e=>{if(e.target.value.length>=4)document.getElementById('sMonth').focus();});
-    document.getElementById('sMonth').addEventListener('input',e=>{if(e.target.value.length>=2)document.getElementById('sDay').focus();});
     document.getElementById('bYear').addEventListener('input',e=>{if(e.target.value.length>=4)document.getElementById('bMonth').focus();});
     document.getElementById('bMonth').addEventListener('input',e=>{if(e.target.value.length>=2)document.getElementById('bDay').focus();});
 
-  const saved=await getSetting('birthday');
-  showView(saved?'lock':'setup');
+  showView('lock');
   }catch(err){
     console.error('Init error:', err);
-    // Page is still visible because setup view is active by default
   }
 })();
 </script>
