@@ -209,9 +209,12 @@
     margin-left: 12px; /* optical compensation */
     margin-bottom: 20px;
     opacity: 0;
-    animation: fadeUp 0.92s 0.32s var(--ease-page) forwards;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
+    /* Opacity-only to avoid sub-pixel jitter at animation end on large weight-200 glyphs */
+    animation: fadeIn 0.92s 0.32s var(--ease-page) forwards;
+  }
+
+  @keyframes fadeIn {
+    to { opacity: 1; }
   }
 
   .cover-title-sep {
