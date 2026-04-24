@@ -209,12 +209,10 @@
     margin-left: 12px; /* optical compensation */
     margin-bottom: 20px;
     opacity: 0;
-    /* Opacity-only to avoid sub-pixel jitter at animation end on large weight-200 glyphs */
-    animation: fadeIn 0.92s 0.32s var(--ease-page) forwards;
-  }
-
-  @keyframes fadeIn {
-    to { opacity: 1; }
+    animation: fadeUp 0.92s 0.32s var(--ease-page) forwards;
+    /* will-change keeps this on its own GPU layer so the parent stageIn
+       layer dropping doesn't re-rasterise the text at animation end */
+    will-change: transform, opacity;
   }
 
   .cover-title-sep {
