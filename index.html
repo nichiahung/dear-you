@@ -118,12 +118,6 @@
   }
   .stage.active {
     display: flex;
-    animation: stageIn 0.42s var(--ease-page) both;
-  }
-
-  @keyframes stageIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
   }
 
   /* Pexels peony background - blurred for elegance */
@@ -196,7 +190,23 @@
     text-transform: uppercase;
     margin-bottom: 32px;
     opacity: 0;
-    animation: fadeUp 0.78s 0.18s var(--ease-page) forwards;
+    will-change: transform, opacity;
+  }
+
+  body.animation-ready .cover-label {
+    animation: textRevealSoft 0.88s 0.18s var(--ease-page) forwards;
+  }
+
+  .cover-title-zh-wrap {
+    display: inline-block;
+    position: relative;
+    margin-bottom: 20px;
+    opacity: 0;
+    will-change: opacity;
+  }
+
+  body.animation-ready .cover-title-zh-wrap {
+    animation: titleSettle 0.96s 0.28s var(--ease-page) forwards;
   }
 
   .cover-title-zh {
@@ -207,9 +217,7 @@
     color: var(--ink);
     letter-spacing: 12px;
     margin-left: 12px; /* optical compensation */
-    margin-bottom: 20px;
-    opacity: 0;
-    animation: fadeUp 0.92s 0.32s var(--ease-page) forwards;
+    margin-bottom: 0;
   }
 
   .cover-title-sep {
@@ -218,12 +226,46 @@
     background: linear-gradient(to bottom, transparent, var(--gold), transparent);
     margin: 0 auto 24px;
     opacity: 0;
-    animation: growDown 0.58s 0.58s var(--ease-soft) forwards;
+  }
+
+  body.animation-ready .cover-title-sep {
+    animation: growDown 0.56s 0.74s var(--ease-soft) forwards;
   }
 
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(12px); }
     to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes textRevealSoft {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 8px, 0);
+    }
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  @keyframes titleSettle {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes textRevealScript {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 6px, 0);
+    }
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
   }
 
   @keyframes fadeDown {
@@ -246,7 +288,11 @@
     letter-spacing: 3px;
     margin-bottom: 50px;
     opacity: 0;
-    animation: fadeUp 0.82s 0.72s var(--ease-page) forwards;
+    will-change: transform, opacity;
+  }
+
+  body.animation-ready .cover-title-en {
+    animation: textRevealSoft 0.92s 0.82s var(--ease-page) forwards;
   }
 
   .cover-hint {
@@ -255,7 +301,11 @@
     color: var(--rose-deep);
     margin-bottom: 28px;
     opacity: 0;
-    animation: fadeUp 0.76s 0.9s var(--ease-page) forwards;
+    will-change: transform, opacity;
+  }
+
+  body.animation-ready .cover-hint {
+    animation: textRevealScript 0.84s 1s var(--ease-page) forwards;
   }
 
   .date-inputs {
@@ -265,7 +315,10 @@
     align-items: center;
     margin-bottom: 32px;
     opacity: 0;
-    animation: fadeUp 0.72s 1.02s var(--ease-page) forwards;
+  }
+
+  body.animation-ready .date-inputs {
+    animation: fadeUp 0.78s 1.14s var(--ease-page) forwards;
   }
 
   .date-inputs input {
@@ -307,7 +360,10 @@
     color: var(--ink-faded);
     text-transform: uppercase;
     opacity: 0;
-    animation: fadeUp 0.7s 1.02s var(--ease-page) forwards;
+  }
+
+  body.animation-ready .date-label {
+    animation: fadeUp 0.76s 1.14s var(--ease-page) forwards;
   }
 
   .date-label span { width: 82px; text-align: center; }
@@ -330,7 +386,10 @@
     position: relative;
     overflow: hidden;
     opacity: 0;
-    animation: fadeUp 0.72s 1.12s var(--ease-page) forwards;
+  }
+
+  body.animation-ready .open-btn {
+    animation: fadeUp 0.78s 1.24s var(--ease-page) forwards;
   }
 
   .open-btn::before {
@@ -392,6 +451,9 @@
     letter-spacing: 8px;
     margin-bottom: 40px;
     opacity: 0;
+  }
+
+  body.animation-ready .dedication-ornament {
     animation: fadeUp 0.68s 0.08s var(--ease-page) forwards;
   }
 
@@ -405,7 +467,11 @@
     text-transform: uppercase;
     margin-bottom: 20px;
     opacity: 0;
-    animation: fadeUp 0.72s 0.18s var(--ease-page) forwards;
+    will-change: transform, opacity;
+  }
+
+  body.animation-ready .dedication-to {
+    animation: textRevealSoft 0.72s 0.12s var(--ease-page) forwards;
   }
 
   .dedication-name {
@@ -417,7 +483,11 @@
     margin-bottom: 36px;
     letter-spacing: 2px;
     opacity: 0;
-    animation: fadeUp 0.88s 0.32s var(--ease-page) forwards;
+    will-change: transform, opacity;
+  }
+
+  body.animation-ready .dedication-name {
+    animation: textRevealScript 0.88s 0.24s var(--ease-page) forwards;
   }
 
   .dedication-divider {
@@ -426,6 +496,9 @@
     background: linear-gradient(to right, transparent, var(--gold), transparent);
     margin: 0 auto 40px;
     opacity: 0;
+  }
+
+  body.animation-ready .dedication-divider {
     animation: fadeUp 0.56s 0.58s var(--ease-soft) forwards;
   }
 
@@ -438,7 +511,11 @@
     letter-spacing: 1px;
     margin-bottom: 28px;
     opacity: 0;
-    animation: fadeUp 0.82s 0.72s var(--ease-page) forwards;
+    will-change: transform, opacity;
+  }
+
+  body.animation-ready .dedication-poem-en {
+    animation: textRevealSoft 0.84s 0.62s var(--ease-page) forwards;
   }
 
   .dedication-poem-zh {
@@ -450,7 +527,11 @@
     letter-spacing: 4px;
     margin-bottom: 48px;
     opacity: 0;
-    animation: fadeUp 0.82s 0.88s var(--ease-page) forwards;
+    will-change: transform, opacity;
+  }
+
+  body.animation-ready .dedication-poem-zh {
+    animation: textRevealSoft 0.84s 0.76s var(--ease-page) forwards;
   }
 
   .dedication-sign {
@@ -460,7 +541,11 @@
     margin-bottom: 56px;
     letter-spacing: 1px;
     opacity: 0;
-    animation: fadeUp 0.72s 1.04s var(--ease-page) forwards;
+    will-change: transform, opacity;
+  }
+
+  body.animation-ready .dedication-sign {
+    animation: textRevealScript 0.72s 0.92s var(--ease-page) forwards;
   }
 
   .dedication-continue {
@@ -480,6 +565,9 @@
     display: inline-flex;
     align-items: center;
     opacity: 0;
+  }
+
+  body.animation-ready .dedication-continue {
     animation: fadeUp 0.72s 1.16s var(--ease-page) forwards;
   }
 
@@ -1373,7 +1461,9 @@
       <div class="dash"></div>
     </div>
     <div class="cover-label">For the one I love</div>
-    <h1 class="cover-title-zh">致 · 妳</h1>
+    <div class="cover-title-zh-wrap">
+      <h1 class="cover-title-zh">致 · 妳</h1>
+    </div>
     <div class="cover-title-sep"></div>
     <div class="cover-title-en">A Love Letter<br><em>in Chapters</em></div>
 
@@ -2055,6 +2145,22 @@ function isPreviewToggleEnabled() {
     || params.get('birthdayPreview') === '1';
 }
 
+async function waitForOpeningFonts() {
+  if (!document.fonts || !document.fonts.ready) {
+    await new Promise((resolve) => setTimeout(resolve, 180));
+    return;
+  }
+  try {
+    await Promise.race([
+      document.fonts.ready,
+      new Promise((resolve) => setTimeout(resolve, 1500))
+    ]);
+  } catch (_) {
+    // Fall back to a short delay if the Font Loading API is unavailable or fails.
+    await new Promise((resolve) => setTimeout(resolve, 180));
+  }
+}
+
 function toggleTestMode(){
   TEST_BIRTHDAY_MODE = !TEST_BIRTHDAY_MODE;
   const button = document.getElementById('testToggle');
@@ -2365,6 +2471,9 @@ async function toggleRecord(){
     document.getElementById('recBtn').addEventListener('click',toggleRecord);
     document.getElementById('fImages').addEventListener('change',addImages);
     document.getElementById('fAudio').addEventListener('change',addAudioFile);
+
+    await waitForOpeningFonts();
+    document.body.classList.add('animation-ready');
 
     const FRONTISPIECE = {
       letters:    { cls: 'fp-letters',    caption: '— with all my heart —' },
