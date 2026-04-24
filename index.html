@@ -905,6 +905,7 @@
     transition: background 0.28s var(--ease-soft), color 0.28s var(--ease-soft), border-color 0.28s var(--ease-soft);
   }
 
+  .new-btn:hover,
   .new-btn:active { background: var(--rose); color: var(--paper); }
 
   /* === Entry card === */
@@ -1033,6 +1034,7 @@
     transition: transform 0.24s var(--ease-soft);
   }
 
+  .entry-media img:hover { transform: translateY(-2px); box-shadow: var(--shadow-medium); }
   .entry-media img:active { transform: scale(0.98); }
 
   .entry-audio { margin-top: 18px; }
@@ -1329,6 +1331,19 @@
   }
   .btn-secondary:active { background: var(--ink-soft); color: var(--paper); }
 
+  /* Keyboard focus ring — visible only for keyboard users, matches gold accent */
+  :focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 3px;
+  }
+  .date-inputs input:focus-visible,
+  .field input:focus-visible,
+  .field textarea:focus-visible {
+    outline: none;
+    border-bottom-color: var(--gold);
+    box-shadow: 0 1px 0 0 var(--gold);
+  }
+
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
       animation-duration: 0.01ms !important;
@@ -1360,8 +1375,8 @@
 <body>
 
 <!-- Development-only birthday easter egg toggle. Hidden unless preview mode is enabled. -->
-<button class="test-toggle" id="testToggle" title="切換生日彩蛋預覽" hidden>✦ 測試生日彩蛋</button>
-<div class="petal-rain" id="petalRain" style="display:none;"></div>
+<button class="test-toggle" id="testToggle" title="切換生日彩蛋預覽" aria-pressed="false" hidden>✦ 測試生日彩蛋</button>
+<div class="petal-rain" id="petalRain" aria-hidden="true" style="display:none;"></div>
 
 <!-- LOCK -->
 <div class="stage active" id="lockView">
@@ -1410,7 +1425,7 @@
     </div>
     <div class="dedication-sign">— with all my love —</div>
 
-    <div class="birthday-message" id="birthdayMessage" style="display:none;">
+    <div class="birthday-message" id="birthdayMessage" hidden aria-live="polite">
       <div class="birthday-age-line">
         Today, you turn <span class="age-num" id="ageNum">—</span><br>
         but in my eyes, you are forever<br>
@@ -1436,7 +1451,7 @@
     <div class="app-title-en">A Love Letter in Chapters</div>
   </header>
 
-  <nav class="chapters">
+  <nav class="chapters" aria-label="Chapters">
     <button class="chapter active" data-cat="letters">
       <span class="iconify chapter-icon" data-icon="ph:envelope-thin"></span>
       <span class="chapter-num">Ch. I</span>
@@ -1463,7 +1478,7 @@
     </button>
   </nav>
 
-  <main>
+  <main id="main" aria-label="Entries">
     <div class="chapter-frontispiece fp-letters" id="frontispiece">
       <div class="chapter-frontispiece-caption" id="frontispieceCaption">— with all my heart —</div>
     </div>
@@ -1919,10 +1934,15 @@ async function getEntry(id){
 }
 
 function showView(name) {
-  document.getElementById('lockView').classList.toggle('active', name==='lock');
-  document.getElementById('dedicationView').classList.toggle('active', name==='dedication');
-  if (name==='app') document.getElementById('app').classList.add('visible');
-  else document.getElementById('app').classList.remove('visible');
+  const lock = document.getElementById('lockView');
+  const dedication = document.getElementById('dedicationView');
+  const app = document.getElementById('app');
+  lock.classList.toggle('active', name==='lock');
+  dedication.classList.toggle('active', name==='dedication');
+  app.classList.toggle('visible', name==='app');
+  lock.inert = name !== 'lock';
+  dedication.inert = name !== 'dedication';
+  app.inert = name !== 'app';
 }
 
 const MARLENE_BIRTHDAY = '1985-05-06';
@@ -1976,6 +1996,7 @@ const PETAL_TEMPLATES = [
 function createPetalRain(){
   const container = document.getElementById('petalRain');
   if (!container) return;
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   container.innerHTML = '';
   container.style.display = 'block';
   const count = 28;
@@ -2013,7 +2034,7 @@ function applyBirthdayMagic(){
   if (coverLabel) coverLabel.textContent = 'Happy Birthday, my love';
 
   const message = document.getElementById('birthdayMessage');
-  if (message) message.style.display = 'block';
+  if (message) message.hidden = false;
 
   const ageEl = document.getElementById('ageNum');
   const daysEl = document.getElementById('daysSince');
@@ -2031,7 +2052,7 @@ function removeBirthdayMagic(){
   if (coverLabel) coverLabel.textContent = 'For the one I love';
 
   const message = document.getElementById('birthdayMessage');
-  if (message) message.style.display = 'none';
+  if (message) message.hidden = true;
 
   document.title = '致 · 妳 — A Love Letter in Chapters';
 }
@@ -2061,11 +2082,13 @@ function toggleTestMode(){
 
   if (TEST_BIRTHDAY_MODE) {
     button.classList.add('active');
+    button.setAttribute('aria-pressed', 'true');
     button.textContent = '✦ 彩蛋預覽中 · 點擊關閉';
     applyBirthdayMagic();
     showTestHint();
   } else {
     button.classList.remove('active');
+    button.setAttribute('aria-pressed', 'false');
     button.textContent = '✦ 測試生日彩蛋';
     removeBirthdayMagic();
     const hint = document.getElementById('testHint');
