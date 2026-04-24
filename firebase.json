@@ -11,6 +11,8 @@
       "firebase.json",
       "firestore.rules",
       "storage.rules",
+      "README.md",
+      "docs/**",
       "**/.*",
       "**/node_modules/**"
     ]

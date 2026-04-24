@@ -38,6 +38,9 @@
     --shadow-soft: 0 2px 20px rgba(61, 44, 58, 0.06);
     --shadow-medium: 0 10px 40px rgba(61, 44, 58, 0.12);
     --shadow-deep: 0 20px 60px rgba(61, 44, 58, 0.25);
+
+    --ease-page: cubic-bezier(0.19, 1, 0.22, 1);
+    --ease-soft: cubic-bezier(0.22, 0.61, 0.36, 1);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -113,7 +116,15 @@
     overflow-y: auto;
     padding: 40px 20px;
   }
-  .stage.active { display: flex; }
+  .stage.active {
+    display: flex;
+    animation: stageIn 0.42s var(--ease-page) both;
+  }
+
+  @keyframes stageIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
 
   /* Pexels peony background - blurred for elegance */
   .stage-bg {
@@ -125,7 +136,7 @@
     background-size: cover;
     background-position: center;
     pointer-events: none;
-    animation: bgDrift 30s ease-in-out infinite;
+    animation: bgDrift 38s ease-in-out infinite;
   }
 
   @keyframes bgDrift {
@@ -160,7 +171,7 @@
     gap: 16px;
     margin-bottom: 28px;
     opacity: 0;
-    animation: fadeDown 1.2s 0.2s ease forwards;
+    animation: fadeDown 0.72s 0.08s var(--ease-page) forwards;
   }
 
   .ornament-top .dash {
@@ -185,7 +196,7 @@
     text-transform: uppercase;
     margin-bottom: 32px;
     opacity: 0;
-    animation: fadeUp 1.4s 0.5s ease forwards;
+    animation: fadeUp 0.78s 0.18s var(--ease-page) forwards;
   }
 
   .cover-title-zh {
@@ -198,7 +209,7 @@
     margin-left: 12px; /* optical compensation */
     margin-bottom: 20px;
     opacity: 0;
-    animation: fadeUp 1.8s 0.8s ease forwards;
+    animation: fadeUp 0.92s 0.32s var(--ease-page) forwards;
   }
 
   .cover-title-sep {
@@ -207,16 +218,16 @@
     background: linear-gradient(to bottom, transparent, var(--gold), transparent);
     margin: 0 auto 24px;
     opacity: 0;
-    animation: growDown 1s 1.4s ease forwards;
+    animation: growDown 0.58s 0.58s var(--ease-soft) forwards;
   }
 
   @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(18px); }
+    from { opacity: 0; transform: translateY(12px); }
     to   { opacity: 1; transform: translateY(0); }
   }
 
   @keyframes fadeDown {
-    from { opacity: 0; transform: translateY(-18px); }
+    from { opacity: 0; transform: translateY(-10px); }
     to   { opacity: 1; transform: translateY(0); }
   }
 
@@ -235,7 +246,7 @@
     letter-spacing: 3px;
     margin-bottom: 50px;
     opacity: 0;
-    animation: fadeUp 1.6s 1.6s ease forwards;
+    animation: fadeUp 0.82s 0.72s var(--ease-page) forwards;
   }
 
   .cover-hint {
@@ -244,7 +255,7 @@
     color: var(--rose-deep);
     margin-bottom: 28px;
     opacity: 0;
-    animation: fadeUp 1.4s 2s ease forwards;
+    animation: fadeUp 0.76s 0.9s var(--ease-page) forwards;
   }
 
   .date-inputs {
@@ -254,7 +265,7 @@
     align-items: center;
     margin-bottom: 32px;
     opacity: 0;
-    animation: fadeUp 1.2s 2.3s ease forwards;
+    animation: fadeUp 0.72s 1.02s var(--ease-page) forwards;
   }
 
   .date-inputs input {
@@ -271,7 +282,7 @@
     outline: none;
     border-radius: 0;
     letter-spacing: 2px;
-    transition: border-color 0.3s;
+    transition: border-color 0.28s var(--ease-soft);
   }
 
   .date-inputs input:focus { border-color: var(--gold); }
@@ -296,7 +307,7 @@
     color: var(--ink-faded);
     text-transform: uppercase;
     opacity: 0;
-    animation: fadeUp 1.2s 2.3s ease forwards;
+    animation: fadeUp 0.7s 1.02s var(--ease-page) forwards;
   }
 
   .date-label span { width: 82px; text-align: center; }
@@ -313,13 +324,13 @@
     padding: 14px 48px;
     border-radius: 0;
     cursor: pointer;
-    transition: all 0.4s ease;
+    transition: border-color 0.32s var(--ease-soft), color 0.32s var(--ease-soft);
     letter-spacing: 6px;
     text-transform: uppercase;
     position: relative;
     overflow: hidden;
     opacity: 0;
-    animation: fadeUp 1.2s 2.6s ease forwards;
+    animation: fadeUp 0.72s 1.12s var(--ease-page) forwards;
   }
 
   .open-btn::before {
@@ -328,11 +339,11 @@
     inset: 0;
     background: var(--ink);
     transform: translateY(100%);
-    transition: transform 0.4s ease;
+    transition: transform 0.36s var(--ease-page);
     z-index: 0;
   }
 
-  .open-btn span { position: relative; z-index: 1; transition: color 0.4s ease; }
+  .open-btn span { position: relative; z-index: 1; transition: color 0.36s var(--ease-soft); }
   .open-btn:hover::before, .open-btn:active::before { transform: translateY(0); }
   .open-btn:hover span, .open-btn:active span { color: var(--paper); }
 
@@ -354,7 +365,7 @@
     color: var(--ink-faded);
     letter-spacing: 2px;
     opacity: 0;
-    animation: fadeUp 1.2s 2.9s ease forwards;
+    animation: fadeUp 0.72s 1.22s var(--ease-page) forwards;
   }
   .small-link a {
     color: var(--rose-deep);
@@ -381,7 +392,7 @@
     letter-spacing: 8px;
     margin-bottom: 40px;
     opacity: 0;
-    animation: fadeUp 1.2s 0.3s ease forwards;
+    animation: fadeUp 0.68s 0.08s var(--ease-page) forwards;
   }
 
   .dedication-to {
@@ -394,7 +405,7 @@
     text-transform: uppercase;
     margin-bottom: 20px;
     opacity: 0;
-    animation: fadeUp 1.4s 0.8s ease forwards;
+    animation: fadeUp 0.72s 0.18s var(--ease-page) forwards;
   }
 
   .dedication-name {
@@ -406,7 +417,7 @@
     margin-bottom: 36px;
     letter-spacing: 2px;
     opacity: 0;
-    animation: fadeUp 2s 1.4s ease forwards;
+    animation: fadeUp 0.88s 0.32s var(--ease-page) forwards;
   }
 
   .dedication-divider {
@@ -415,7 +426,7 @@
     background: linear-gradient(to right, transparent, var(--gold), transparent);
     margin: 0 auto 40px;
     opacity: 0;
-    animation: fadeUp 1s 2.4s ease forwards;
+    animation: fadeUp 0.56s 0.58s var(--ease-soft) forwards;
   }
 
   .dedication-poem-en {
@@ -427,7 +438,7 @@
     letter-spacing: 1px;
     margin-bottom: 28px;
     opacity: 0;
-    animation: fadeUp 1.8s 2.9s ease forwards;
+    animation: fadeUp 0.82s 0.72s var(--ease-page) forwards;
   }
 
   .dedication-poem-zh {
@@ -439,7 +450,7 @@
     letter-spacing: 4px;
     margin-bottom: 48px;
     opacity: 0;
-    animation: fadeUp 1.8s 3.6s ease forwards;
+    animation: fadeUp 0.82s 0.88s var(--ease-page) forwards;
   }
 
   .dedication-sign {
@@ -449,7 +460,7 @@
     margin-bottom: 56px;
     letter-spacing: 1px;
     opacity: 0;
-    animation: fadeUp 1.4s 4.3s ease forwards;
+    animation: fadeUp 0.72s 1.04s var(--ease-page) forwards;
   }
 
   .dedication-continue {
@@ -463,13 +474,13 @@
     padding: 12px 32px;
     border-radius: 0;
     cursor: pointer;
-    transition: all 0.4s ease;
+    transition: background 0.34s var(--ease-soft), color 0.34s var(--ease-soft), border-color 0.34s var(--ease-soft);
     letter-spacing: 4px;
     text-transform: uppercase;
     display: inline-flex;
     align-items: center;
     opacity: 0;
-    animation: fadeUp 1.4s 4.8s ease forwards;
+    animation: fadeUp 0.72s 1.16s var(--ease-page) forwards;
   }
 
   .dedication-continue:hover,
@@ -477,6 +488,165 @@
     background: var(--ink);
     color: var(--paper);
     border-color: var(--ink);
+  }
+
+  /* ============================================
+     BIRTHDAY EASTER EGG
+  ============================================ */
+  body.birthday-mode .cover-label {
+    font-family: 'Pinyon Script', cursive;
+    font-size: 26px;
+    color: var(--rose-deep);
+    text-transform: none;
+    letter-spacing: 1px;
+    font-style: normal;
+    text-shadow: 0 1px 8px rgba(248, 241, 235, 0.9), 0 0 20px rgba(201, 168, 168, 0.3);
+  }
+
+  .petal-rain {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 120;
+    overflow: hidden;
+  }
+
+  .petal-rain .petal {
+    position: absolute;
+    top: -40px;
+    width: 22px;
+    height: 22px;
+    opacity: 0;
+    animation:
+      petalFall var(--dur, 14s) linear var(--delay, 0s) infinite,
+      petalSway var(--sway, 3s) ease-in-out var(--delay, 0s) infinite alternate;
+    transform-origin: center;
+    filter: drop-shadow(0 3px 4px rgba(122, 70, 70, 0.2));
+    will-change: transform, opacity;
+  }
+
+  .petal-rain .petal svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    animation: petalFlip var(--flip, 4s) ease-in-out var(--delay, 0s) infinite;
+  }
+
+  .petal.size-s { width: 14px; height: 14px; filter: drop-shadow(0 2px 2px rgba(122, 70, 70, 0.14)); }
+  .petal.size-m { width: 22px; height: 22px; }
+  .petal.size-l { width: 30px; height: 30px; filter: drop-shadow(0 4px 6px rgba(122, 70, 70, 0.24)); }
+
+  @keyframes petalFall {
+    0% { opacity: 0; transform: translate(0, 0); }
+    8% { opacity: 0.88; }
+    92% { opacity: 0.8; }
+    100% { opacity: 0; transform: translate(var(--drift, 120px), 110vh); }
+  }
+
+  @keyframes petalSway {
+    from { margin-left: -12px; }
+    to { margin-left: 12px; }
+  }
+
+  @keyframes petalFlip {
+    0% { transform: rotate(0deg) rotateY(0deg); }
+    25% { transform: rotate(90deg) rotateY(140deg); }
+    50% { transform: rotate(180deg) rotateY(0deg); }
+    75% { transform: rotate(270deg) rotateY(-140deg); }
+    100% { transform: rotate(360deg) rotateY(0deg); }
+  }
+
+  .birthday-message {
+    margin-top: 30px;
+    padding-top: 26px;
+    border-top: 1px dashed var(--line);
+    opacity: 0;
+    animation: fadeUp 0.72s 0.28s var(--ease-page) forwards;
+  }
+
+  .birthday-age-line {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 17px;
+    line-height: 1.8;
+    color: var(--rose-deep);
+    letter-spacing: 1px;
+    margin-bottom: 18px;
+  }
+
+  .birthday-age-line .age-num {
+    font-family: 'Pinyon Script', cursive;
+    font-size: 28px;
+    color: var(--rose-deep);
+    margin: 0 4px;
+  }
+
+  .birthday-since {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 13px;
+    color: var(--ink-faded);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .birthday-since .days-num {
+    color: var(--rose-deep);
+    font-weight: 500;
+    font-style: normal;
+  }
+
+  .test-toggle {
+    position: fixed;
+    bottom: 12px;
+    left: 12px;
+    z-index: 300;
+    background: rgba(61, 44, 58, 0.72);
+    color: var(--paper-cream);
+    border: 1px solid rgba(217, 197, 189, 0.72);
+    padding: 6px 12px;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 11px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    border-radius: 2px;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    opacity: 0.6;
+    transition: opacity 0.24s var(--ease-soft), background 0.24s var(--ease-soft), border-color 0.24s var(--ease-soft);
+  }
+
+  .test-toggle[hidden] {
+    display: none;
+  }
+
+  .test-toggle:hover { opacity: 1; }
+  .test-toggle.active {
+    background: var(--rose-deep);
+    border-color: var(--rose-deep);
+    color: white;
+    opacity: 1;
+  }
+
+  .test-hint {
+    position: fixed;
+    bottom: 52px;
+    left: 12px;
+    z-index: 300;
+    background: rgba(61, 44, 58, 0.92);
+    color: var(--paper-cream);
+    padding: 10px 14px;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 12px;
+    letter-spacing: 1px;
+    border-radius: 2px;
+    max-width: 260px;
+    line-height: 1.6;
+    border-left: 2px solid var(--rose-deep);
+    box-shadow: var(--shadow-medium);
   }
 
   /* ============================================
@@ -488,10 +658,10 @@
     min-height: 100vh;
     display: none;
   }
-  #app.visible { display: block; animation: pageReveal 1s ease; }
+  #app.visible { display: block; animation: pageReveal 0.68s var(--ease-page); }
 
   @keyframes pageReveal {
-    from { opacity: 0; transform: translateY(30px); }
+    from { opacity: 0; transform: translateY(14px); }
     to { opacity: 1; transform: translateY(0); }
   }
 
@@ -563,7 +733,7 @@
     padding: 20px 12px;
     cursor: pointer;
     position: relative;
-    transition: all 0.3s ease;
+    transition: color 0.28s var(--ease-soft), transform 0.28s var(--ease-soft);
     text-align: center;
   }
 
@@ -586,7 +756,7 @@
     letter-spacing: 4px;
     color: var(--ink-faded);
     margin-bottom: 4px;
-    transition: color 0.3s;
+    transition: color 0.28s var(--ease-soft), opacity 0.28s var(--ease-soft);
   }
 
   .chapter-name-en {
@@ -597,7 +767,7 @@
     letter-spacing: 2px;
     color: var(--ink-faded);
     opacity: 0.7;
-    transition: color 0.3s;
+    transition: color 0.28s var(--ease-soft), opacity 0.28s var(--ease-soft);
   }
 
   .chapter.active .chapter-name-zh,
@@ -614,7 +784,7 @@
     width: 0;
     height: 1px;
     background: var(--ink);
-    transition: width 0.4s ease;
+    transition: width 0.34s var(--ease-page);
   }
 
   .chapter.active::after { width: 40px; }
@@ -637,13 +807,13 @@
     overflow: hidden;
     background-size: cover;
     background-position: center;
-    transition: background-image 0.6s ease;
+    transition: opacity 0.36s var(--ease-soft);
     opacity: 0;
-    animation: fpFade 1s 0.2s ease forwards;
+    animation: fpFade 0.62s 0.08s var(--ease-page) forwards;
   }
 
   @keyframes fpFade {
-    from { opacity: 0; transform: translateY(-10px); }
+    from { opacity: 0; transform: translateY(-6px); }
     to { opacity: 1; transform: translateY(0); }
   }
 
@@ -732,7 +902,7 @@
     padding: 8px 22px;
     letter-spacing: 3px;
     text-transform: uppercase;
-    transition: all 0.3s;
+    transition: background 0.28s var(--ease-soft), color 0.28s var(--ease-soft), border-color 0.28s var(--ease-soft);
   }
 
   .new-btn:active { background: var(--rose); color: var(--paper); }
@@ -745,18 +915,18 @@
     margin-bottom: 28px;
     position: relative;
     box-shadow: var(--shadow-soft);
-    transition: box-shadow 0.4s, transform 0.4s;
-    animation: entryFade 0.6s ease backwards;
+    transition: box-shadow 0.32s var(--ease-soft), transform 0.32s var(--ease-soft);
+    animation: entryFade 0.44s var(--ease-page) backwards;
   }
 
-  .entry:nth-child(1) { animation-delay: 0.05s; }
-  .entry:nth-child(2) { animation-delay: 0.1s; }
-  .entry:nth-child(3) { animation-delay: 0.15s; }
-  .entry:nth-child(4) { animation-delay: 0.2s; }
-  .entry:nth-child(n+5) { animation-delay: 0.25s; }
+  .entry:nth-child(1) { animation-delay: 0.03s; }
+  .entry:nth-child(2) { animation-delay: 0.06s; }
+  .entry:nth-child(3) { animation-delay: 0.09s; }
+  .entry:nth-child(4) { animation-delay: 0.12s; }
+  .entry:nth-child(n+5) { animation-delay: 0.14s; }
 
   @keyframes entryFade {
-    from { opacity: 0; transform: translateY(20px); }
+    from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
   }
 
@@ -790,7 +960,7 @@
     font-style: italic;
     font-size: 14px;
     letter-spacing: 2px;
-    transition: color 0.2s;
+    transition: color 0.22s var(--ease-soft);
     display: inline-flex;
     align-items: center;
     gap: 4px;
@@ -860,7 +1030,7 @@
     padding: 6px;
     background: var(--paper-cream);
     box-shadow: var(--shadow-soft);
-    transition: transform 0.3s;
+    transition: transform 0.24s var(--ease-soft);
   }
 
   .entry-media img:active { transform: scale(0.98); }
@@ -925,7 +1095,7 @@
     margin-bottom: 28px;
     position: relative;
     box-shadow: var(--shadow-medium);
-    animation: entryFade 0.6s ease backwards;
+    animation: entryFade 0.44s var(--ease-page) backwards;
   }
 
   .voice-card::before {
@@ -956,7 +1126,7 @@
     z-index: 50;
     overflow-y: auto;
   }
-  .modal.visible { display: flex; animation: modalFade 0.3s ease; }
+  .modal.visible { display: flex; animation: modalFade 0.24s var(--ease-soft); }
 
   @keyframes modalFade {
     from { opacity: 0; }
@@ -972,11 +1142,11 @@
     box-shadow: var(--shadow-deep);
     margin: 20px 0;
     position: relative;
-    animation: cardRise 0.4s ease;
+    animation: cardRise 0.34s var(--ease-page);
   }
 
   @keyframes cardRise {
-    from { opacity: 0; transform: translateY(30px); }
+    from { opacity: 0; transform: translateY(14px); }
     to { opacity: 1; transform: translateY(0); }
   }
 
@@ -1043,7 +1213,7 @@
     outline: none;
     resize: vertical;
     border-radius: 0;
-    transition: border-color 0.3s;
+    transition: border-color 0.24s var(--ease-soft);
     line-height: 1.8;
   }
 
@@ -1068,7 +1238,7 @@
     padding: 10px 18px;
     cursor: pointer;
     letter-spacing: 2px;
-    transition: all 0.3s;
+    transition: background 0.26s var(--ease-soft), color 0.26s var(--ease-soft), border-color 0.26s var(--ease-soft);
     text-transform: uppercase;
     display: inline-flex;
     align-items: center;
@@ -1141,7 +1311,7 @@
     cursor: pointer;
     letter-spacing: 4px;
     text-transform: uppercase;
-    transition: all 0.3s;
+    transition: background 0.26s var(--ease-soft), color 0.26s var(--ease-soft), border-color 0.26s var(--ease-soft);
     border-radius: 0;
   }
 
@@ -1158,6 +1328,15 @@
     color: var(--ink-soft);
   }
   .btn-secondary:active { background: var(--ink-soft); color: var(--paper); }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
 
   /* === Responsive === */
   @media (max-width: 640px) {
@@ -1179,6 +1358,10 @@
 </style>
 </head>
 <body>
+
+<!-- Development-only birthday easter egg toggle. Hidden unless preview mode is enabled. -->
+<button class="test-toggle" id="testToggle" title="切換生日彩蛋預覽" hidden>✦ 測試生日彩蛋</button>
+<div class="petal-rain" id="petalRain" style="display:none;"></div>
 
 <!-- LOCK -->
 <div class="stage active" id="lockView">
@@ -1226,6 +1409,18 @@
       以及之間所有靜謐的瞬間。
     </div>
     <div class="dedication-sign">— with all my love —</div>
+
+    <div class="birthday-message" id="birthdayMessage" style="display:none;">
+      <div class="birthday-age-line">
+        Today, you turn <span class="age-num" id="ageNum">—</span><br>
+        but in my eyes, you are forever<br>
+        the one who makes my heart skip.
+      </div>
+      <div class="birthday-since">
+        <span class="days-num" id="daysSince">—</span> days of loving you
+      </div>
+    </div>
+
     <button class="dedication-continue" id="continueBtn">
       <span>turn the page</span>
       <span class="iconify" data-icon="ph:arrow-right-thin" style="margin-left:10px;"></span>
@@ -1731,6 +1926,152 @@ function showView(name) {
 }
 
 const MARLENE_BIRTHDAY = '1985-05-06';
+let TEST_BIRTHDAY_MODE = false;
+
+function isBirthdayToday(){
+  if (TEST_BIRTHDAY_MODE) return true;
+  const now = new Date();
+  const [, bMonth, bDay] = MARLENE_BIRTHDAY.split('-').map(Number);
+  return (now.getMonth() + 1) === bMonth && now.getDate() === bDay;
+}
+
+function calculateAge(){
+  const now = new Date();
+  const birth = new Date(MARLENE_BIRTHDAY + 'T00:00:00');
+  let age = now.getFullYear() - birth.getFullYear();
+  const thisYearBirthday = new Date(now.getFullYear(), birth.getMonth(), birth.getDate());
+  if (now < thisYearBirthday) age--;
+  if (TEST_BIRTHDAY_MODE && now < thisYearBirthday) age++;
+  return age;
+}
+
+function daysSinceBirth(){
+  const now = new Date();
+  const birth = new Date(MARLENE_BIRTHDAY + 'T00:00:00');
+  return Math.floor((now - birth) / (1000 * 60 * 60 * 24));
+}
+
+const PETAL_TEMPLATES = [
+  `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs><radialGradient id="pg{{ID}}" cx="35%" cy="25%" r="75%"><stop offset="0%" stop-color="#f5e0dc"/><stop offset="45%" stop-color="#d9b0b0"/><stop offset="100%" stop-color="#a67f7f"/></radialGradient></defs>
+    <path d="M50,8 C70,20 85,45 78,70 C72,88 58,95 50,95 C42,95 28,88 22,70 C15,45 30,20 50,8 Z" fill="url(#pg{{ID}})"/>
+    <path d="M50,12 C50,35 50,60 50,88" stroke="#b5898a" stroke-width="0.8" stroke-opacity="0.35" fill="none"/>
+  </svg>`,
+  `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs><radialGradient id="pg{{ID}}" cx="40%" cy="30%" r="80%"><stop offset="0%" stop-color="#f8e8e4"/><stop offset="50%" stop-color="#c9a8a8"/><stop offset="100%" stop-color="#8a6a6b"/></radialGradient></defs>
+    <path d="M52,5 C75,15 88,40 82,68 C76,90 55,92 48,88 C28,78 18,52 28,28 C34,12 44,6 52,5 Z" fill="url(#pg{{ID}})"/>
+    <path d="M48,15 C46,40 50,65 55,85" stroke="#9a7070" stroke-width="0.7" stroke-opacity="0.3" fill="none"/>
+  </svg>`,
+  `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs><radialGradient id="pg{{ID}}" cx="50%" cy="30%" r="70%"><stop offset="0%" stop-color="#fbeeea"/><stop offset="60%" stop-color="#d5b5b5"/><stop offset="100%" stop-color="#a67f7f"/></radialGradient></defs>
+    <path d="M50,15 C60,8 80,18 82,42 C84,68 62,92 50,92 C38,92 16,68 18,42 C20,18 40,8 50,15 Z" fill="url(#pg{{ID}})"/>
+  </svg>`,
+  `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs><radialGradient id="pg{{ID}}" cx="35%" cy="20%" r="85%"><stop offset="0%" stop-color="#f6e2de"/><stop offset="55%" stop-color="#cda0a0"/><stop offset="100%" stop-color="#966666"/></radialGradient></defs>
+    <path d="M50,3 C62,15 72,38 68,62 C64,84 55,95 50,95 C45,95 36,84 32,62 C28,38 38,15 50,3 Z" fill="url(#pg{{ID}})"/>
+    <path d="M50,8 Q50,50 50,90" stroke="#a67f7f" stroke-width="0.6" stroke-opacity="0.4" fill="none"/>
+  </svg>`
+];
+
+function createPetalRain(){
+  const container = document.getElementById('petalRain');
+  if (!container) return;
+  container.innerHTML = '';
+  container.style.display = 'block';
+  const count = 28;
+  const sizes = ['size-s', 'size-m', 'size-m', 'size-l'];
+
+  for (let i = 0; i < count; i++) {
+    const petal = document.createElement('div');
+    petal.className = `petal ${sizes[Math.floor(Math.random() * sizes.length)]}`;
+    const template = PETAL_TEMPLATES[Math.floor(Math.random() * PETAL_TEMPLATES.length)];
+    petal.innerHTML = template.replace(/\{\{ID\}\}/g, `p${i}`);
+    petal.style.left = `${Math.random() * 100}vw`;
+    petal.style.setProperty('--dur', `${12 + Math.random() * 8}s`);
+    petal.style.setProperty('--delay', `${-Math.random() * 14}s`);
+    petal.style.setProperty('--drift', `${(Math.random() - 0.5) * 280}px`);
+    petal.style.setProperty('--sway', `${2.5 + Math.random() * 2}s`);
+    petal.style.setProperty('--flip', `${3 + Math.random() * 4}s`);
+    container.appendChild(petal);
+  }
+}
+
+function stopPetalRain(){
+  const container = document.getElementById('petalRain');
+  if (!container) return;
+  container.innerHTML = '';
+  container.style.display = 'none';
+}
+
+function applyBirthdayMagic(){
+  if (!isBirthdayToday()) return;
+
+  document.body.classList.add('birthday-mode');
+  createPetalRain();
+
+  const coverLabel = document.querySelector('.cover-label');
+  if (coverLabel) coverLabel.textContent = 'Happy Birthday, my love';
+
+  const message = document.getElementById('birthdayMessage');
+  if (message) message.style.display = 'block';
+
+  const ageEl = document.getElementById('ageNum');
+  const daysEl = document.getElementById('daysSince');
+  if (ageEl) ageEl.textContent = calculateAge();
+  if (daysEl) daysEl.textContent = daysSinceBirth().toLocaleString();
+
+  document.title = '♡ Happy Birthday, Marlene ♡';
+}
+
+function removeBirthdayMagic(){
+  document.body.classList.remove('birthday-mode');
+  stopPetalRain();
+
+  const coverLabel = document.querySelector('.cover-label');
+  if (coverLabel) coverLabel.textContent = 'For the one I love';
+
+  const message = document.getElementById('birthdayMessage');
+  if (message) message.style.display = 'none';
+
+  document.title = '致 · 妳 — A Love Letter in Chapters';
+}
+
+function showTestHint(){
+  const oldHint = document.getElementById('testHint');
+  if (oldHint) oldHint.remove();
+
+  const hint = document.createElement('div');
+  hint.id = 'testHint';
+  hint.className = 'test-hint';
+  hint.innerHTML = '彩蛋位置：<br>1. 封面「Happy Birthday, my love」<br>2. 花瓣持續飄落<br>3. 解鎖後獻詞頁生日訊息';
+  document.body.appendChild(hint);
+  setTimeout(() => { if (hint.parentNode) hint.remove(); }, 8000);
+}
+
+function isPreviewToggleEnabled() {
+  const params = new URLSearchParams(window.location.search);
+  return window.location.hostname === 'localhost'
+    || window.location.hostname === '127.0.0.1'
+    || params.get('birthdayPreview') === '1';
+}
+
+function toggleTestMode(){
+  TEST_BIRTHDAY_MODE = !TEST_BIRTHDAY_MODE;
+  const button = document.getElementById('testToggle');
+
+  if (TEST_BIRTHDAY_MODE) {
+    button.classList.add('active');
+    button.textContent = '✦ 彩蛋預覽中 · 點擊關閉';
+    applyBirthdayMagic();
+    showTestHint();
+  } else {
+    button.classList.remove('active');
+    button.textContent = '✦ 測試生日彩蛋';
+    removeBirthdayMagic();
+    const hint = document.getElementById('testHint');
+    if (hint) hint.remove();
+  }
+}
 
 async function handleUnlock() {
   const y=document.getElementById('bYear').value.trim();
@@ -2010,6 +2351,12 @@ async function toggleRecord(){
 
     document.getElementById('unlockBtn').addEventListener('click',handleUnlock);
     document.getElementById('continueBtn').addEventListener('click',continueToBook);
+    const testToggle = document.getElementById('testToggle');
+    if (isPreviewToggleEnabled()) {
+      testToggle.hidden = false;
+      testToggle.addEventListener('click',toggleTestMode);
+    }
+    applyBirthdayMagic();
     document.getElementById('newBtn').addEventListener('click',()=>openEditor());
     document.getElementById('cancelBtn').addEventListener('click',closeEditor);
     document.getElementById('saveBtn').addEventListener('click',saveEntry);
