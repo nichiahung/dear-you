@@ -49,7 +49,17 @@ docs/ROADMAP.md  -> 後續功能、技術債、AI agent 維護注意事項
 - [Firebase Architecture](docs/FIREBASE.md)
 - [Roadmap and Agent Notes](docs/ROADMAP.md)
 
-## Quick Deploy
+## Deploy
+
+### Auto-deploy (recommended)
+
+Pushes to `main` that touch `index.html`, `firebase.json`, or `.firebaserc` automatically deploy Hosting via GitHub Actions (`.github/workflows/deploy.yml`).
+
+One-time setup — add repo secret `FIREBASE_SERVICE_ACCOUNT_DEARYOU_BFFFC` containing a Firebase service-account JSON key with the `Firebase Hosting Admin` role. See [docs/FIREBASE.md](docs/FIREBASE.md) for the exact steps.
+
+### Manual deploy
+
+Rules changes are still manual (not covered by the workflow):
 
 ```bash
 firebase deploy --only hosting --project dearyou-bfffc
