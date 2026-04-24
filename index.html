@@ -618,6 +618,10 @@
     transition: opacity 0.24s var(--ease-soft), background 0.24s var(--ease-soft), border-color 0.24s var(--ease-soft);
   }
 
+  .test-toggle[hidden] {
+    display: none;
+  }
+
   .test-toggle:hover { opacity: 1; }
   .test-toggle.active {
     background: var(--rose-deep);
@@ -1355,8 +1359,8 @@
 </head>
 <body>
 
-<!-- Development-only birthday easter egg toggle. Remove before final production if desired. -->
-<button class="test-toggle" id="testToggle" title="切換生日彩蛋預覽">✦ 測試生日彩蛋</button>
+<!-- Development-only birthday easter egg toggle. Hidden unless preview mode is enabled. -->
+<button class="test-toggle" id="testToggle" title="切換生日彩蛋預覽" hidden>✦ 測試生日彩蛋</button>
 <div class="petal-rain" id="petalRain" style="display:none;"></div>
 
 <!-- LOCK -->
@@ -2039,9 +2043,16 @@ function showTestHint(){
   const hint = document.createElement('div');
   hint.id = 'testHint';
   hint.className = 'test-hint';
-  hint.innerHTML = '彩蛋位置：<br>1. 封面「Happy Birthday, my love」<br>2. 花瓣持續飄落<br>3. 解鎖後獻詞頁生日訊息<br><br>生日：<strong>1985 / 05 / 06</strong>';
+  hint.innerHTML = '彩蛋位置：<br>1. 封面「Happy Birthday, my love」<br>2. 花瓣持續飄落<br>3. 解鎖後獻詞頁生日訊息';
   document.body.appendChild(hint);
   setTimeout(() => { if (hint.parentNode) hint.remove(); }, 8000);
+}
+
+function isPreviewToggleEnabled() {
+  const params = new URLSearchParams(window.location.search);
+  return window.location.hostname === 'localhost'
+    || window.location.hostname === '127.0.0.1'
+    || params.get('birthdayPreview') === '1';
 }
 
 function toggleTestMode(){
@@ -2340,7 +2351,11 @@ async function toggleRecord(){
 
     document.getElementById('unlockBtn').addEventListener('click',handleUnlock);
     document.getElementById('continueBtn').addEventListener('click',continueToBook);
-    document.getElementById('testToggle').addEventListener('click',toggleTestMode);
+    const testToggle = document.getElementById('testToggle');
+    if (isPreviewToggleEnabled()) {
+      testToggle.hidden = false;
+      testToggle.addEventListener('click',toggleTestMode);
+    }
     applyBirthdayMagic();
     document.getElementById('newBtn').addEventListener('click',()=>openEditor());
     document.getElementById('cancelBtn').addEventListener('click',closeEditor);

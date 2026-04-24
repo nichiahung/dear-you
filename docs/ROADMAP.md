@@ -14,12 +14,6 @@
 -> 文字 / 圖片 / 錄音同步到 cloud
 ```
 
-目前生日：
-
-```text
-1985-05-06
-```
-
 目前章節：
 
 - Ch. I Letters：寫給妳的信
@@ -107,6 +101,7 @@
 - 不要移除 Firebase Anonymous Auth，除非同步更新 rules 與登入流程。
 - 不要把大型圖片 / 錄音塞進 Firestore 文件。
 - 不要把 Google Photos `baseUrl` 當永久 URL 存起來。
+- 不要把實際生日解鎖值寫進公開文件或公開測試提示。
 - 改資料模型時同步更新：
   - `index.html`
   - `firestore.rules`

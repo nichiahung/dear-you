@@ -58,7 +58,7 @@ firebase deploy --only firestore:rules,storage --project dearyou-bfffc
 
 ## Current UX
 
-- 生日解鎖：`1985 / 05 / 06`
+- 生日解鎖：使用 Marlene 的生日
 - Dedication page：`To Marlene`
 - 四個章節：
   - Ch. I Letters
@@ -69,7 +69,7 @@ firebase deploy --only firestore:rules,storage --project dearyou-bfffc
 - 每篇右上角有來源 icon：
   - `ph:cloud-thin`：Cloud / Firestore
   - `ph:bookmark-simple-thin`：Local only
-- 開發期間左下角會顯示生日彩蛋測試按鈕，可手動預覽花瓣與生日訊息
+- 開發時可用本機或 `?birthdayPreview=1` 顯示生日彩蛋測試按鈕，手動預覽花瓣與生日訊息
 
 ## Important Agent Notes
 
