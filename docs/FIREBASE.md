@@ -146,19 +146,34 @@ request.auth != null && request.auth.token.email in allowedAuthors
 
 ## Deploy
 
-Hosting：
+### Hosting（自動）
+
+`.github/workflows/deploy.yml` 在 push 到 `main` 且變動了 `index.html` / `firebase.json` / `.firebaserc` 時自動跑 `firebase deploy --only hosting`。
+
+一次性設定：
+
+1. Firebase Console → Project settings → Service accounts → Generate new private key（下載 JSON）
+2. 確認角色至少包含 `Firebase Hosting Admin`
+3. GitHub repo → Settings → Secrets and variables → Actions → New repository secret
+   - Name: `FIREBASE_SERVICE_ACCOUNT_DEARYOU_BFFFC`
+   - Value: 貼上整份 JSON
+4. 確認後把本機那份 JSON 刪掉（別 commit）
+
+之後推 main 會自動部署。Actions tab 可看到執行狀態與部署 preview URL。
+
+### Hosting（手動備援）
 
 ```bash
 firebase deploy --only hosting --project dearyou-bfffc
 ```
 
-Rules：
+### Rules（手動）
 
 ```bash
 firebase deploy --only firestore:rules,storage --project dearyou-bfffc
 ```
 
-全部：
+### 全部
 
 ```bash
 firebase deploy --project dearyou-bfffc
