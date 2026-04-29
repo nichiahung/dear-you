@@ -10,11 +10,25 @@
 
 | 用途 | Pexels 頁面 | 直連 URL |
 | --- | --- | --- |
-| 封面背景與 Dedication 背景，柔焦藕色牡丹 | [photo/931177](https://www.pexels.com/photo/931177/) | `images.pexels.com/photos/931177/pexels-photo-931177.jpeg` |
-| Ch. I Letters 扉頁，玫瑰盛開 | [photo/39517](https://www.pexels.com/photo/39517/) | `images.pexels.com/photos/39517/rose-flower-blossom-bloom-39517.jpeg` |
-| Ch. II Margins 扉頁，花與書感 | [photo/756903](https://www.pexels.com/photo/756903/) | `images.pexels.com/photos/756903/pexels-photo-756903.jpeg` |
-| Ch. III Chronicles 扉頁，花瓣時光感 | [photo/1022922](https://www.pexels.com/photo/1022922/) | `images.pexels.com/photos/1022922/pexels-photo-1022922.jpeg` |
-| Ch. IV Voices 扉頁，柔和粉花 | [photo/1071882](https://www.pexels.com/photo/1071882/) | `images.pexels.com/photos/1071882/pexels-photo-1071882.jpeg` |
+| 封面背景，藕色玫瑰花束 | [photo/16039162](https://www.pexels.com/photo/a-close-up-of-beige-and-pink-roses-16039162/) | `images.pexels.com/photos/16039162/pexels-photo-16039162.jpeg` |
+
+## Generated Images
+
+章節 banner 為 AI 生成專案素材，依照封面藕色玫瑰視覺語言延伸，並分別對應各章功能文字。素材輸出為無白邊寬幅 banner，約 3:1 比例、420px 高，供 CSS `background-size: cover` 裁切顯示。
+
+| 用途 | 檔案 | 主題 |
+| --- | --- | --- |
+| Ch. I Letters banner | `assets/banners/letters-banner.png` | 寫給妳的信：玫瑰、信封、手寫信紙 |
+| Ch. II Margins banner | `assets/banners/margins-banner.png` | 書頁邊的字：玫瑰、翻開的書、書頁邊緣 |
+| Ch. III Chronicles banner | `assets/banners/chronicles-banner.png` | 我們的編年史：玫瑰、時鐘、回憶紙張 |
+| Ch. IV Voices banner | `assets/banners/voices-banner.png` | 孩子的聲音：玫瑰、音樂盒、溫柔紀念感 |
+
+生日彩蛋角色素材：
+
+| 用途 | 檔案 | 說明 |
+| --- | --- | --- |
+| 生日彩蛋左下角 Happy Birthday 角色 | `assets/characters/birthday-bear-happy.png` | 使用使用者提供的去背玩偶圖，加上 Happy Birthday 對話框並清理為透明 PNG |
+| 生日彩蛋右下角 Mommy Happy Birthday 畫作 | `assets/characters/mommy-birthday-drawing.png` | 使用使用者提供的手繪生日圖延伸為透明貼圖素材 |
 
 目前 URL 格式：
 

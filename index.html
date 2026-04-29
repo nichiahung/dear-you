@@ -73,6 +73,7 @@
 
   html, body {
     min-height: 100vh;
+    min-height: 100dvh;
     font-family: 'Noto Serif TC', 'Cormorant Garamond', Georgia, serif;
     color: var(--ink);
     background: var(--paper);
@@ -116,6 +117,9 @@
     overflow-y: auto;
     padding: 40px 20px;
   }
+  body.stage-open .stage.active {
+    overscroll-behavior: contain;
+  }
   .stage.active {
     display: flex;
   }
@@ -123,10 +127,10 @@
   /* Pexels peony background - blurred for elegance */
   .stage-bg {
     position: absolute;
-    inset: 0;
+    inset: -80px 0;
     background-image:
       linear-gradient(to bottom, rgba(248, 241, 235, 0.82) 0%, rgba(248, 241, 235, 0.88) 50%, rgba(240, 229, 219, 0.92) 100%),
-      url("https://images.pexels.com/photos/931177/pexels-photo-931177.jpeg?auto=compress&cs=tinysrgb&w=1600");
+      url("https://images.pexels.com/photos/16039162/pexels-photo-16039162.jpeg?auto=compress&cs=tinysrgb&w=1600");
     background-size: cover;
     background-position: center;
     pointer-events: none;
@@ -685,6 +689,197 @@
     font-style: normal;
   }
 
+  .birthday-bear-pop {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: flex-end;
+    justify-content: flex-start;
+    z-index: 260;
+    padding: 0 0 18px 12px;
+    pointer-events: none;
+  }
+
+  .birthday-drawing-pop {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: flex-end;
+    justify-content: flex-end;
+    z-index: 255;
+    padding: 0 14px 18px 0;
+    pointer-events: none;
+  }
+
+  .birthday-bear-pop.visible,
+  .birthday-drawing-pop.visible {
+    display: flex;
+  }
+
+  .birthday-bear-card,
+  .birthday-drawing-card {
+    position: relative;
+    padding: 0;
+    pointer-events: auto;
+    cursor: pointer;
+    will-change: transform, opacity;
+  }
+
+  .birthday-sparkles {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .birthday-sparkle {
+    position: absolute;
+    left: var(--sx);
+    top: var(--sy);
+    width: var(--ss, 9px);
+    height: var(--ss, 9px);
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.65);
+    animation: birthdaySparkle 4.4s ease-in-out infinite;
+  }
+
+  .birthday-sparkle.dot {
+    border-radius: 50%;
+    background: var(--sc, #c4a876);
+    box-shadow: 0 0 9px rgba(248, 222, 150, 0.75);
+  }
+
+  .birthday-sparkle.heart {
+    width: auto;
+    height: auto;
+    color: var(--sc, #e8b7be);
+    font-size: var(--ss, 13px);
+    line-height: 1;
+    text-shadow: 0 0 8px rgba(232, 183, 190, 0.6);
+  }
+
+  .birthday-sparkle.diamond {
+    background: var(--sc, #c4a876);
+    transform: translate(-50%, -50%) rotate(45deg) scale(0.65);
+    box-shadow: 0 0 9px rgba(248, 222, 150, 0.75);
+  }
+
+  .birthday-bear-card {
+    width: min(270px, 46vw);
+  }
+
+  .birthday-drawing-card {
+    width: min(250px, 42vw);
+  }
+
+  .birthday-bear-pop.visible .birthday-bear-card {
+    animation:
+      stickerPopLeft 0.9s 0.2s var(--ease-soft) both,
+      stickerFloatLeft 7.2s 1.3s ease-in-out infinite;
+  }
+
+  .birthday-drawing-pop.visible .birthday-drawing-card {
+    animation:
+      stickerPopRight 0.95s 0.95s var(--ease-soft) both,
+      stickerFloatRight 8s 1.8s ease-in-out infinite;
+  }
+
+  .birthday-bear-pop.closing .birthday-bear-card,
+  .birthday-drawing-pop.closing .birthday-drawing-card {
+    animation: stickerDismiss 0.24s var(--ease-soft) forwards;
+  }
+
+  .birthday-bear-image,
+  .birthday-drawing-image {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  @keyframes stickerPopLeft {
+    0% { opacity: 0; transform: translate(-10px, 18px) scale(0.96); }
+    55% { opacity: 1; transform: translate(0, -2px) scale(1.01); }
+    100% { opacity: 1; transform: translate(0, 0) scale(1); }
+  }
+
+  @keyframes stickerPopRight {
+    0% { opacity: 0; transform: translate(12px, 18px) rotate(1deg) scale(0.96); }
+    55% { opacity: 1; transform: translate(0, -2px) rotate(-0.2deg) scale(1.01); }
+    100% { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1); }
+  }
+
+  @keyframes stickerFloatLeft {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-3px) rotate(-0.35deg); }
+  }
+
+  @keyframes stickerFloatRight {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-3px) rotate(0.45deg); }
+  }
+
+  @keyframes stickerDismiss {
+    from { opacity: 1; transform: translateY(0) scale(1); }
+    to { opacity: 0; transform: translateY(8px) scale(0.96); }
+  }
+
+  @keyframes birthdaySparkle {
+    0%, 58%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(0.56); }
+    66% { opacity: 0.95; transform: translate(-50%, -50%) scale(1); }
+    75% { opacity: 0.2; transform: translate(-50%, -50%) scale(0.72); }
+  }
+
+  .birthday-sparkle.diamond {
+    animation-name: birthdayDiamondSparkle;
+  }
+
+  @keyframes birthdayDiamondSparkle {
+    0%, 58%, 100% { opacity: 0; transform: translate(-50%, -50%) rotate(45deg) scale(0.56); }
+    66% { opacity: 0.95; transform: translate(-50%, -50%) rotate(45deg) scale(1); }
+    75% { opacity: 0.2; transform: translate(-50%, -50%) rotate(45deg) scale(0.72); }
+  }
+
+  .birthday-burst {
+    position: fixed;
+    left: var(--x);
+    top: var(--y);
+    width: var(--size, 10px);
+    height: var(--size, 10px);
+    z-index: 270;
+    pointer-events: none;
+    animation: birthdayBurst 0.9s var(--ease-soft) forwards;
+  }
+
+  .birthday-burst.dot {
+    border-radius: 50%;
+    background: var(--burst-color, #c4a876);
+    box-shadow: 0 0 10px rgba(248, 222, 150, 0.72);
+  }
+
+  .birthday-burst.heart {
+    color: var(--burst-color, #e8b7be);
+    font-size: var(--size, 14px);
+    line-height: 1;
+    width: auto;
+    height: auto;
+    text-shadow: 0 0 8px rgba(232, 183, 190, 0.52);
+  }
+
+  @keyframes birthdayBurst {
+    0% {
+      opacity: 0;
+      transform: translate(-50%, -50%) translate(0, 0) scale(0.7) rotate(0deg);
+    }
+    18% { opacity: 1; }
+    100% {
+      opacity: 0;
+      transform:
+        translate(-50%, -50%)
+        translate(var(--dx), var(--dy))
+        scale(1.08)
+        rotate(var(--rot));
+    }
+  }
+
   .test-toggle {
     position: fixed;
     bottom: 12px;
@@ -919,23 +1114,22 @@
 
   .chapter-frontispiece-caption {
     position: absolute;
-    bottom: 18px;
-    left: 0;
-    right: 0;
-    text-align: center;
-    font-family: 'Pinyon Script', cursive;
-    font-size: 26px;
+    left: clamp(28px, 9vw, 120px);
+    bottom: 34px;
+    text-align: left;
+    font-family: 'Noto Serif TC', 'Cormorant Garamond', Georgia, serif;
+    font-size: 21px;
     color: var(--mauve);
-    letter-spacing: 1px;
+    letter-spacing: 4px;
     z-index: 2;
     text-shadow: 0 1px 8px rgba(248, 241, 235, 0.8);
   }
 
-  /* Chapter-specific images (Pexels, verified accessible) */
-  .fp-letters { background-image: url("https://images.pexels.com/photos/39517/rose-flower-blossom-bloom-39517.jpeg?auto=compress&cs=tinysrgb&w=1200"); }
-  .fp-margins { background-image: url("https://images.pexels.com/photos/756903/pexels-photo-756903.jpeg?auto=compress&cs=tinysrgb&w=1200"); }
-  .fp-chronicles { background-image: url("https://images.pexels.com/photos/1022922/pexels-photo-1022922.jpeg?auto=compress&cs=tinysrgb&w=1200"); }
-  .fp-voices { background-image: url("https://images.pexels.com/photos/1071882/pexels-photo-1071882.jpeg?auto=compress&cs=tinysrgb&w=1200"); }
+  /* Chapter banners generated from the cover rose mood, themed per chapter. */
+  .fp-letters { background-image: url("assets/banners/letters-banner.png"); }
+  .fp-margins { background-image: url("assets/banners/margins-banner.png"); }
+  .fp-chronicles { background-image: url("assets/banners/chronicles-banner.png"); }
+  .fp-voices { background-image: url("assets/banners/voices-banner.png"); }
 
   .section-header {
     display: flex;
@@ -1450,6 +1644,27 @@
 <!-- Development-only birthday easter egg toggle. Hidden unless preview mode is enabled. -->
 <button class="test-toggle" id="testToggle" title="切換生日彩蛋預覽" hidden>✦ 測試生日彩蛋</button>
 <div class="petal-rain" id="petalRain" style="display:none;"></div>
+<div class="birthday-bear-pop" id="birthdayBearPop" aria-hidden="true">
+  <div class="birthday-bear-card" role="dialog" aria-modal="true" aria-label="Happy Birthday">
+    <span class="birthday-sparkles" aria-hidden="true">
+      <span class="birthday-sparkle heart" style="--sx: 72%; --sy: 16%; --ss: 13px; --sc: #e8b7be; animation-delay: 1.4s;">♡</span>
+      <span class="birthday-sparkle dot" style="--sx: 84%; --sy: 26%; --ss: 7px; --sc: #c4a876; animation-delay: 2.4s;"></span>
+      <span class="birthday-sparkle diamond" style="--sx: 60%; --sy: 22%; --ss: 8px; --sc: #d7b76f; animation-delay: 3.1s;"></span>
+    </span>
+    <img class="birthday-bear-image" src="assets/characters/birthday-bear-happy.png" alt="Happy Birthday">
+  </div>
+</div>
+<div class="birthday-drawing-pop" id="birthdayDrawingPop" aria-hidden="true">
+  <div class="birthday-drawing-card" role="dialog" aria-modal="true" aria-label="Mommy Happy Birthday">
+    <span class="birthday-sparkles" aria-hidden="true">
+      <span class="birthday-sparkle diamond" style="--sx: 18%; --sy: 18%; --ss: 8px; --sc: #d7b76f; animation-delay: 1.9s;"></span>
+      <span class="birthday-sparkle heart" style="--sx: 78%; --sy: 68%; --ss: 13px; --sc: #f0a9bd; animation-delay: 2.8s;">♡</span>
+      <span class="birthday-sparkle dot" style="--sx: 88%; --sy: 38%; --ss: 7px; --sc: #f0cf72; animation-delay: 3.5s;"></span>
+      <span class="birthday-sparkle heart" style="--sx: 10%; --sy: 62%; --ss: 11px; --sc: #e8b7be; animation-delay: 4.1s;">♡</span>
+    </span>
+    <img class="birthday-drawing-image" src="assets/characters/mommy-birthday-drawing.png" alt="Mommy Happy Birthday">
+  </div>
+</div>
 
 <!-- LOCK -->
 <div class="stage active" id="lockView">
@@ -1555,7 +1770,7 @@
 
   <main>
     <div class="chapter-frontispiece fp-letters" id="frontispiece">
-      <div class="chapter-frontispiece-caption" id="frontispieceCaption">— with all my heart —</div>
+      <div class="chapter-frontispiece-caption" id="frontispieceCaption">寫給妳的信</div>
     </div>
 
     <div id="voicesIntro" style="display:none;" class="voices-intro">
@@ -1840,6 +2055,7 @@ const STORE = 'entries';
 const SETTINGS_STORE = 'settings';
 let db = null;
 let cloudAvailable = false;
+let localDbAvailable = false;
 
 function openDB() {
   return new Promise((resolve, reject) => {
@@ -1853,28 +2069,53 @@ function openDB() {
       if (!d.objectStoreNames.contains(SETTINGS_STORE)) {
         d.createObjectStore(SETTINGS_STORE, { keyPath: 'key' });
       }
-    };
-    req.onsuccess = () => { db = req.result; resolve(db); };
-    req.onerror = () => reject(req.error);
-  });
-}
+	    };
+	    req.onsuccess = () => { db = req.result; localDbAvailable = true; resolve(db); };
+	    req.onerror = () => reject(req.error);
+	  });
+	}
 
-function tx(s, m='readonly'){return db.transaction(s,m).objectStore(s);}
+	function tx(s, m='readonly'){
+	  if (!localDbAvailable || !db) return null;
+	  return db.transaction(s,m).objectStore(s);
+	}
 
-async function getLocalSetting(k){return new Promise(r=>{const q=tx(SETTINGS_STORE).get(k);q.onsuccess=()=>r(q.result?.value);q.onerror=()=>r(null);});}
-async function setLocalSetting(k,v){return new Promise(r=>{const q=tx(SETTINGS_STORE,'readwrite').put({key:k,value:v});q.onsuccess=()=>r();});}
-async function delLocalSetting(k){return new Promise(r=>{const q=tx(SETTINGS_STORE,'readwrite').delete(k);q.onsuccess=()=>r();});}
+	async function getLocalSetting(k){
+	  if (!localDbAvailable) return null;
+	  return new Promise(r=>{const q=tx(SETTINGS_STORE)?.get(k); if(!q){r(null); return;} q.onsuccess=()=>r(q.result?.value);q.onerror=()=>r(null);});
+	}
+	async function setLocalSetting(k,v){
+	  if (!localDbAvailable) return;
+	  return new Promise(r=>{const q=tx(SETTINGS_STORE,'readwrite')?.put({key:k,value:v}); if(!q){r(); return;} q.onsuccess=()=>r(); q.onerror=()=>r();});
+	}
+	async function delLocalSetting(k){
+	  if (!localDbAvailable) return;
+	  return new Promise(r=>{const q=tx(SETTINGS_STORE,'readwrite')?.delete(k); if(!q){r(); return;} q.onsuccess=()=>r(); q.onerror=()=>r();});
+	}
 
-async function getLocalAllEntries(cat){
-  return new Promise(r=>{
-    const idx=tx(STORE).index('category');
-    const q=idx.getAll(cat);
-    q.onsuccess=()=>{const l=q.result||[];l.sort((a,b)=>(b.date||'').localeCompare(a.date||''));r(l);};
-  });
-}
-async function saveLocalEntry(e){return new Promise(r=>{const q=tx(STORE,'readwrite').put(e);q.onsuccess=()=>r(q.result);});}
-async function deleteLocalEntry(id){return new Promise(r=>{const q=tx(STORE,'readwrite').delete(id);q.onsuccess=()=>r();});}
-async function getLocalEntry(id){return new Promise(r=>{const q=tx(STORE).get(id);q.onsuccess=()=>r(q.result);});}
+	async function getLocalAllEntries(cat){
+	  if (!localDbAvailable) return [];
+	  return new Promise(r=>{
+	    const store = tx(STORE);
+	    if(!store){r([]); return;}
+	    const idx=store.index('category');
+	    const q=idx.getAll(cat);
+	    q.onsuccess=()=>{const l=q.result||[];l.sort((a,b)=>(b.date||'').localeCompare(a.date||''));r(l);};
+	    q.onerror=()=>r([]);
+	  });
+	}
+	async function saveLocalEntry(e){
+	  if (!localDbAvailable) return e?.id ?? null;
+	  return new Promise(r=>{const q=tx(STORE,'readwrite')?.put(e); if(!q){r(e?.id ?? null); return;} q.onsuccess=()=>r(q.result); q.onerror=()=>r(e?.id ?? null);});
+	}
+	async function deleteLocalEntry(id){
+	  if (!localDbAvailable) return;
+	  return new Promise(r=>{const q=tx(STORE,'readwrite')?.delete(id); if(!q){r(); return;} q.onsuccess=()=>r(); q.onerror=()=>r();});
+	}
+	async function getLocalEntry(id){
+	  if (!localDbAvailable) return null;
+	  return new Promise(r=>{const q=tx(STORE)?.get(id); if(!q){r(null); return;} q.onsuccess=()=>r(q.result); q.onerror=()=>r(null);});
+	}
 
 function setCloudStatus(text, error=false) {
   const el = document.getElementById('cloudStatus');
@@ -2009,6 +2250,7 @@ async function getEntry(id){
 }
 
 function showView(name) {
+  document.body.classList.toggle('stage-open', name !== 'app');
   document.getElementById('lockView').classList.toggle('active', name==='lock');
   document.getElementById('dedicationView').classList.toggle('active', name==='dedication');
   if (name==='app') document.getElementById('app').classList.add('visible');
@@ -2093,6 +2335,71 @@ function stopPetalRain(){
   container.style.display = 'none';
 }
 
+function showBirthdayBear(){
+  const pop = document.getElementById('birthdayBearPop');
+  if (!pop) return;
+  pop.classList.remove('closing');
+  pop.classList.add('visible');
+  pop.setAttribute('aria-hidden', 'false');
+}
+
+function hideBirthdayBear(){
+  const pop = document.getElementById('birthdayBearPop');
+  if (!pop) return;
+  createBirthdayBurst(pop);
+  hideBirthdaySticker(pop);
+}
+
+function showBirthdayDrawing(){
+  const pop = document.getElementById('birthdayDrawingPop');
+  if (!pop) return;
+  pop.classList.remove('closing');
+  pop.classList.add('visible');
+  pop.setAttribute('aria-hidden', 'false');
+}
+
+function hideBirthdayDrawing(){
+  const pop = document.getElementById('birthdayDrawingPop');
+  if (!pop) return;
+  createBirthdayBurst(pop);
+  hideBirthdaySticker(pop);
+}
+
+function hideBirthdaySticker(pop){
+  if (!pop.classList.contains('visible')) return;
+  pop.classList.add('closing');
+  window.setTimeout(() => {
+    pop.classList.remove('visible', 'closing');
+    pop.setAttribute('aria-hidden', 'true');
+  }, 190);
+}
+
+function createBirthdayBurst(pop){
+  if (!pop.classList.contains('visible')) return;
+  const card = pop.querySelector('[class$="-card"]');
+  if (!card) return;
+  const rect = card.getBoundingClientRect();
+  const originX = rect.left + rect.width * 0.5;
+  const originY = rect.top + rect.height * 0.45;
+  const bits = ['♡', '', '♡', '', ''];
+  const colors = ['#c4a876', '#d995a2', '#e8b7be', '#b08d57', '#f0c7cf'];
+
+  bits.forEach((bit, i) => {
+    const el = document.createElement('span');
+    el.className = `birthday-burst ${bit ? 'heart' : 'dot'}`;
+    el.textContent = bit;
+    el.style.setProperty('--x', `${originX}px`);
+    el.style.setProperty('--y', `${originY}px`);
+    el.style.setProperty('--dx', `${(i - 2) * 18 + (i % 2 ? 8 : -6)}px`);
+    el.style.setProperty('--dy', `${-42 - i * 8}px`);
+    el.style.setProperty('--rot', `${(i - 2) * 18}deg`);
+    el.style.setProperty('--size', `${bit ? 13 + (i % 2) * 2 : 7 + (i % 2) * 2}px`);
+    el.style.setProperty('--burst-color', colors[i]);
+    document.body.appendChild(el);
+    window.setTimeout(() => el.remove(), 950);
+  });
+}
+
 function applyBirthdayMagic(){
   if (!isBirthdayToday()) return;
 
@@ -2116,6 +2423,8 @@ function applyBirthdayMagic(){
 function removeBirthdayMagic(){
   document.body.classList.remove('birthday-mode');
   stopPetalRain();
+  hideBirthdayBear();
+  hideBirthdayDrawing();
 
   const coverLabel = document.querySelector('.cover-label');
   if (coverLabel) coverLabel.textContent = 'For the one I love';
@@ -2133,7 +2442,7 @@ function showTestHint(){
   const hint = document.createElement('div');
   hint.id = 'testHint';
   hint.className = 'test-hint';
-  hint.innerHTML = '彩蛋位置：<br>1. 封面「Happy Birthday, my love」<br>2. 花瓣持續飄落<br>3. 解鎖後獻詞頁生日訊息';
+  hint.innerHTML = '彩蛋位置：<br>1. 內容頁左下角生日熊<br>2. 內容頁右下角 Mommy 生日畫<br>3. 花瓣持續飄落';
   document.body.appendChild(hint);
   setTimeout(() => { if (hint.parentNode) hint.remove(); }, 8000);
 }
@@ -2142,6 +2451,7 @@ function isPreviewToggleEnabled() {
   const params = new URLSearchParams(window.location.search);
   return window.location.hostname === 'localhost'
     || window.location.hostname === '127.0.0.1'
+    || window.location.protocol === 'file:'
     || params.get('birthdayPreview') === '1';
 }
 
@@ -2200,6 +2510,10 @@ async function handleUnlock() {
 
 function continueToBook(){
   showView('app');
+  if (document.body.classList.contains('birthday-mode')) {
+    showBirthdayBear();
+    showBirthdayDrawing();
+  }
   loadEntries();
 }
 
@@ -2446,17 +2760,24 @@ async function toggleRecord(){
 
 (async function init(){
   try{
+    const openingAnimationReady = waitForOpeningFonts().then(() => {
+      document.body.classList.add('animation-ready');
+    });
+
     try{await openDB();}
     catch(err){
+      localDbAvailable = false;
       console.error('IndexedDB failed:', err);
       const msg=document.getElementById('lockMsg');
       if(msg){msg.textContent='儲存初始化失敗，功能受限';}
-      return;
     }
+    await openingAnimationReady;
     await initCloudStore();
 
     document.getElementById('unlockBtn').addEventListener('click',handleUnlock);
     document.getElementById('continueBtn').addEventListener('click',continueToBook);
+    document.querySelector('.birthday-bear-card').addEventListener('click',hideBirthdayBear);
+    document.querySelector('.birthday-drawing-card').addEventListener('click',hideBirthdayDrawing);
     const testToggle = document.getElementById('testToggle');
     if (isPreviewToggleEnabled()) {
       testToggle.hidden = false;
@@ -2472,14 +2793,11 @@ async function toggleRecord(){
     document.getElementById('fImages').addEventListener('change',addImages);
     document.getElementById('fAudio').addEventListener('change',addAudioFile);
 
-    await waitForOpeningFonts();
-    document.body.classList.add('animation-ready');
-
     const FRONTISPIECE = {
-      letters:    { cls: 'fp-letters',    caption: '— with all my heart —' },
-      margins:    { cls: 'fp-margins',    caption: '— every page, I thought of you —' },
-      chronicles: { cls: 'fp-chronicles', caption: '— the days that made us —' },
-      voices:     { cls: 'fp-voices',     caption: '— voices for mama —' }
+      letters:    { cls: 'fp-letters',    caption: '寫給妳的信' },
+      margins:    { cls: 'fp-margins',    caption: '書頁邊的字' },
+      chronicles: { cls: 'fp-chronicles', caption: '我們的編年史' },
+      voices:     { cls: 'fp-voices',     caption: '孩子的聲音' }
     };
 
     function updateFrontispiece(cat) {
