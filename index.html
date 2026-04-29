@@ -1104,32 +1104,63 @@
     content: "";
     position: absolute;
     inset: 0;
+    z-index: 1;
     background: linear-gradient(
       to bottom,
-      rgba(248, 241, 235, 0.25) 0%,
-      rgba(248, 241, 235, 0.5) 50%,
-      rgba(248, 241, 235, 0.85) 100%
+      rgba(248, 241, 235, 0.18) 0%,
+      rgba(248, 241, 235, 0.38) 50%,
+      rgba(248, 241, 235, 0.74) 100%
     );
+  }
+
+  .chapter-frontispiece::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(
+      90deg,
+      rgba(250, 245, 238, 0.82) 0%,
+      rgba(250, 245, 238, 0.58) 25%,
+      rgba(250, 245, 238, 0.18) 48%,
+      transparent 68%
+    );
+    pointer-events: none;
   }
 
   .chapter-frontispiece-caption {
     position: absolute;
     left: clamp(28px, 9vw, 120px);
-    bottom: 34px;
+    bottom: 30px;
     text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
     font-family: 'Noto Serif TC', 'Cormorant Garamond', Georgia, serif;
-    font-size: 21px;
     color: var(--mauve);
-    letter-spacing: 4px;
     z-index: 2;
     text-shadow: 0 1px 8px rgba(248, 241, 235, 0.8);
   }
 
+  .chapter-frontispiece-caption .caption-zh {
+    font-size: 21px;
+    letter-spacing: 4px;
+  }
+
+  .chapter-frontispiece-caption .caption-en {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 19px;
+    font-style: italic;
+    letter-spacing: 3.5px;
+    color: var(--rose-deep);
+    opacity: 0.86;
+  }
+
   /* Chapter banners generated from the cover rose mood, themed per chapter. */
-  .fp-letters { background-image: url("assets/banners/letters-banner.png"); }
-  .fp-margins { background-image: url("assets/banners/margins-banner.png"); }
-  .fp-chronicles { background-image: url("assets/banners/chronicles-banner.png"); }
-  .fp-voices { background-image: url("assets/banners/voices-banner.png"); }
+  .fp-letters { background-image: url("assets/banners/letters-banner.png"); background-position: center 48%; }
+  .fp-margins { background-image: url("assets/banners/margins-banner.png"); background-position: center 48%; }
+  .fp-chronicles { background-image: url("assets/banners/chronicles-banner.png"); background-position: center 46%; }
+  .fp-voices { background-image: url("assets/banners/voices-banner.png"); background-position: center 50%; }
 
   .section-header {
     display: flex;
@@ -1770,7 +1801,10 @@
 
   <main>
     <div class="chapter-frontispiece fp-letters" id="frontispiece">
-      <div class="chapter-frontispiece-caption" id="frontispieceCaption">寫給妳的信</div>
+      <div class="chapter-frontispiece-caption" id="frontispieceCaption">
+        <span class="caption-zh">寫給妳的信</span>
+        <span class="caption-en">Letters</span>
+      </div>
     </div>
 
     <div id="voicesIntro" style="display:none;" class="voices-intro">
@@ -2794,10 +2828,10 @@ async function toggleRecord(){
     document.getElementById('fAudio').addEventListener('change',addAudioFile);
 
     const FRONTISPIECE = {
-      letters:    { cls: 'fp-letters',    caption: '寫給妳的信' },
-      margins:    { cls: 'fp-margins',    caption: '書頁邊的字' },
-      chronicles: { cls: 'fp-chronicles', caption: '我們的編年史' },
-      voices:     { cls: 'fp-voices',     caption: '孩子的聲音' }
+      letters:    { cls: 'fp-letters',    zh: '寫給妳的信', en: 'Letters' },
+      margins:    { cls: 'fp-margins',    zh: '書頁邊的字', en: 'Margins' },
+      chronicles: { cls: 'fp-chronicles', zh: '我們的編年史', en: 'Chronicles' },
+      voices:     { cls: 'fp-voices',     zh: '孩子的聲音', en: 'Voices' }
     };
 
     function updateFrontispiece(cat) {
@@ -2809,7 +2843,13 @@ async function toggleRecord(){
       fp.style.animation = 'none';
       fp.offsetHeight; // reflow
       fp.style.animation = '';
-      cap.textContent = data.caption;
+      const zh = document.createElement('span');
+      const en = document.createElement('span');
+      zh.className = 'caption-zh';
+      en.className = 'caption-en';
+      zh.textContent = data.zh;
+      en.textContent = data.en;
+      cap.replaceChildren(zh, en);
     }
 
     document.querySelectorAll('.chapter').forEach(t=>{
