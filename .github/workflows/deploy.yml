@@ -1,0 +1,53 @@
+name: Deploy to Firebase Hosting
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'src/**'
+      - 'public/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'functions/**'
+      - 'firebase.json'
+      - '.firebaserc'
+      - 'firestore.rules'
+      - 'storage.rules'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-live
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Install functions dependencies
+        run: npm ci
+        working-directory: functions
+
+      - name: Authenticate Firebase
+        run: |
+          printf '%s' '${{ secrets.FIREBASE_SERVICE_ACCOUNT_DEARYOU_BFFFC }}' > "$RUNNER_TEMP/firebase-service-account.json"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/firebase-service-account.json" >> "$GITHUB_ENV"
+
+      - name: Deploy Firebase Hosting and Functions
+        run: npx firebase-tools deploy --only hosting,functions --project dearyou-bfffc --non-interactive
