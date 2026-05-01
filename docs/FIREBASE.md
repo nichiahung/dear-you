@@ -73,10 +73,34 @@ books/dear-you/entries/{entryId}
     }
   ],
   audios: [],
+  margin: {
+    authorKey: "me",
+    author: "J",
+    bookId: "ol-works-OL...",
+    book: {
+      id: "ol-works-OL...",
+      title: "Norwegian Wood",
+      author: "Haruki Murakami",
+      coverUrl: "https://covers.openlibrary.org/b/id/2237620-M.jpg",
+      status: "想讀",
+      votes: 1
+    },
+    page: "42",
+    quote: "引用句",
+    bookmarked: false
+  },
   createdAt: 1776820000000,
   updatedAt: 1776820000000,
   legacyLocalId: null
 }
+```
+
+`margin` 只用於 `category: "margins"` 的讀書心得；其他章節寫入 `null`。
+
+書本候選清單存在 shared book settings：
+
+```text
+books/dear-you/settings/marginsBookQueue
 ```
 
 保留舊路徑：

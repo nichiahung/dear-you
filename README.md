@@ -66,6 +66,7 @@ firebase deploy --only firestore:rules,storage --project dearyou-bfffc
   - Ch. III Chronicles
   - Ch. IV Works
 - 每篇可加入文字、日期、標題、圖片、錄音、上傳音檔
+- Ch. II Margins 可建立共同閱讀清單，透過 Open Library 搜尋書名與封面，並互相留下書邊心得
 - 每篇右上角有來源 icon：
   - `ph:cloud-thin`：Cloud / Firestore
   - `ph:bookmark-simple-thin`：Local only

@@ -85,6 +85,9 @@ https://images.pexels.com/photos/{ID}/...jpeg?auto=compress&cs=tinysrgb&w={width
 | `ph:microphone-thin` | 開始錄音 |
 | `ph:stop-circle-thin` | 停止錄音 |
 | `ph:upload-simple-thin` | 上傳聲音 |
+| `ph:magnifying-glass-thin` | Ch. II 書本候選清單搜尋 |
+| `ph:heart-thin` | Ch. II 書本候選清單想讀數 |
+| `ph:arrow-bend-down-left-thin` | Ch. II 書邊心得回覆 |
 | `ph:pencil-simple-thin` | 編輯文章 |
 | `ph:trash-thin` | 刪除文章 |
 | `ph:arrow-right-thin` | Dedication page 翻頁按鈕 |
@@ -105,6 +108,7 @@ https://images.pexels.com/photos/{ID}/...jpeg?auto=compress&cs=tinysrgb&w={width
 | Google Fonts | 字體 |
 | Pexels CDN | 圖片 |
 | Firebase JS SDK | Auth、Firestore、Storage、Analytics |
+| Open Library APIs | Ch. II 書名搜尋與封面候選 |
 
 Firebase SDK 以 browser ESM CDN 載入：
 
