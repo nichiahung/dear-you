@@ -64,7 +64,7 @@ firebase deploy --only firestore:rules,storage --project dearyou-bfffc
   - Ch. I Letters
   - Ch. II Margins
   - Ch. III Chronicles
-  - Ch. IV Voices
+  - Ch. IV Works
 - 每篇可加入文字、日期、標題、圖片、錄音、上傳音檔
 - 每篇右上角有來源 icon：
   - `ph:cloud-thin`：Cloud / Firestore

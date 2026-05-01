@@ -19,7 +19,7 @@
 - Ch. I Letters：寫給妳的信
 - Ch. II Margins：書頁邊的字
 - Ch. III Chronicles：我們的編年史
-- Ch. IV Voices：孩子的聲音
+- Ch. IV Works：孩子的作品
 
 ## Current Features
 

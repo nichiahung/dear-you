@@ -21,7 +21,7 @@
 | Ch. I Letters banner | `assets/banners/letters-banner.png` | 寫給妳的信：玫瑰、信封、手寫信紙 |
 | Ch. II Margins banner | `assets/banners/margins-banner.png` | 書頁邊的字：玫瑰、翻開的書、書頁邊緣 |
 | Ch. III Chronicles banner | `assets/banners/chronicles-banner.png` | 我們的編年史：玫瑰、時鐘、回憶紙張 |
-| Ch. IV Voices banner | `assets/banners/voices-banner.png` | 孩子的聲音：玫瑰、音樂盒、溫柔紀念感 |
+| Ch. IV Works banner | `assets/banners/voices-banner.png` | 孩子的作品：玫瑰、音樂盒、溫柔紀念感 |
 
 生日彩蛋角色素材：
 
@@ -29,6 +29,7 @@
 | --- | --- | --- |
 | 生日彩蛋左下角 Happy Birthday 角色 | `assets/characters/birthday-bear-happy.png` | 使用使用者提供的去背玩偶圖，加上 Happy Birthday 對話框並清理為透明 PNG |
 | 生日彩蛋右下角 Mommy Happy Birthday 畫作 | `assets/characters/mommy-birthday-drawing.png` | 使用使用者提供的手繪生日圖延伸為透明貼圖素材 |
+| 生日彩蛋 Marlene 下方驚喜圖 | `assets/characters/marlene-birthday-surprise.png` | 點擊生日彩蛋後顯示在內容頁 Marlene 標題下方 |
 
 目前 URL 格式：
 
@@ -76,7 +77,9 @@ https://images.pexels.com/photos/{ID}/...jpeg?auto=compress&cs=tinysrgb&w={width
 | `ph:envelope-thin` | Ch. I Letters |
 | `ph:book-open-thin` | Ch. II Margins |
 | `ph:clock-countdown-thin` | Ch. III Chronicles |
-| `ph:microphone-stage-thin` | Ch. IV Voices |
+| `ph:paint-brush-thin` | Ch. IV Works |
+| `ph:squares-four-thin` | Ch. IV Works 全部分類 |
+| `ph:trophy-thin` | Ch. IV Works 獎狀 / 獎盃分類 |
 | `ph:feather-thin` | New Entry |
 | `ph:camera-thin` | 新增圖片 |
 | `ph:microphone-thin` | 開始錄音 |
