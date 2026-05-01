@@ -1,33 +1,31 @@
 # Assets and Licensing
 
-文件最後更新：2026-04-24
+文件最後更新：2026-05-02
 
 本文件記錄《致 · 妳 — A Love Letter in Chapters》使用的圖片、字體、圖示、CDN、內嵌素材、配色與授權。
 
-## Images
+## Generated Images
 
-所有背景與章節扉頁圖片來自 [Pexels](https://www.pexels.com/)，採用 [Pexels License](https://www.pexels.com/license/)。
+封面背景與章節 banner 為 AI 生成專案素材，依照藕色玫瑰視覺語言延伸。封面背景輸出為 WebP，分桌機與手機裁切；章節素材輸出為無白邊寬幅 banner，約 3:1 比例、420px 高，供 CSS `background-size: cover` 裁切顯示。
 
-| 用途 | Pexels 頁面 | 直連 URL |
+| 用途 | 檔案 | 主題 |
 | --- | --- | --- |
-| 封面背景與 Dedication 背景，柔焦藕色牡丹 | [photo/931177](https://www.pexels.com/photo/931177/) | `images.pexels.com/photos/931177/pexels-photo-931177.jpeg` |
-| Ch. I Letters 扉頁，玫瑰盛開 | [photo/39517](https://www.pexels.com/photo/39517/) | `images.pexels.com/photos/39517/rose-flower-blossom-bloom-39517.jpeg` |
-| Ch. II Margins 扉頁，花與書感 | [photo/756903](https://www.pexels.com/photo/756903/) | `images.pexels.com/photos/756903/pexels-photo-756903.jpeg` |
-| Ch. III Chronicles 扉頁，花瓣時光感 | [photo/1022922](https://www.pexels.com/photo/1022922/) | `images.pexels.com/photos/1022922/pexels-photo-1022922.jpeg` |
-| Ch. IV Voices 扉頁，柔和粉花 | [photo/1071882](https://www.pexels.com/photo/1071882/) | `images.pexels.com/photos/1071882/pexels-photo-1071882.jpeg` |
+| 首頁封面背景 Desktop | `public/assets/backgrounds/cover-floral-desktop.webp` | 藕色玫瑰、奶油白花、柔焦情書封面背景 |
+| 首頁封面背景 Mobile | `public/assets/backgrounds/cover-floral-mobile.webp` | 直式藕色玫瑰花束背景，中央保留文字留白 |
+| 首頁封面背景 Desktop options | `public/assets/backgrounds/cover-floral-desktop-option-*.webp` | 可替換候選版本 |
+| 首頁封面背景 Mobile options | `public/assets/backgrounds/cover-floral-mobile-option-*.webp` | 可替換候選版本 |
+| Ch. I Letters banner | `public/assets/banners/letters-banner.png` | 寫給妳的信：玫瑰、信封、手寫信紙 |
+| Ch. II Margins banner | `public/assets/banners/margins-banner.png` | 書頁邊的字：玫瑰、翻開的書、書頁邊緣 |
+| Ch. III Chronicles banner | `public/assets/banners/chronicles-banner.png` | 我們的編年史：玫瑰、時鐘、回憶紙張 |
+| Ch. IV Works banner | `public/assets/banners/voices-banner.png` | 孩子的作品：玫瑰、音樂盒、溫柔紀念感 |
 
-目前 URL 格式：
+生日彩蛋角色素材：
 
-```text
-https://images.pexels.com/photos/{ID}/...jpeg?auto=compress&cs=tinysrgb&w={width}
-```
-
-常用寬度：
-
-```text
-1600 -> 封面背景
-1200 -> 章節扉頁
-```
+| 用途 | 檔案 | 說明 |
+| --- | --- | --- |
+| 生日彩蛋左下角 Happy Birthday 角色 | `public/assets/characters/birthday-bear-happy.png` | 使用使用者提供的去背玩偶圖，加上 Happy Birthday 對話框並清理為透明 PNG |
+| 生日彩蛋右下角 Mommy Happy Birthday 畫作 | `public/assets/characters/mommy-birthday-drawing.png` | 使用使用者提供的手繪生日圖延伸為透明貼圖素材 |
+| 生日彩蛋 Marlene 下方驚喜圖 | `public/assets/characters/marlene-birthday-surprise.png` | 點擊生日彩蛋後顯示在內容頁 Marlene 標題下方 |
 
 ## Fonts
 
@@ -62,12 +60,17 @@ https://images.pexels.com/photos/{ID}/...jpeg?auto=compress&cs=tinysrgb&w={width
 | `ph:envelope-thin` | Ch. I Letters |
 | `ph:book-open-thin` | Ch. II Margins |
 | `ph:clock-countdown-thin` | Ch. III Chronicles |
-| `ph:microphone-stage-thin` | Ch. IV Voices |
+| `ph:paint-brush-thin` | Ch. IV Works |
+| `ph:squares-four-thin` | Ch. IV Works 全部分類 |
+| `ph:trophy-thin` | Ch. IV Works 獎狀 / 獎盃分類 |
 | `ph:feather-thin` | New Entry |
 | `ph:camera-thin` | 新增圖片 |
 | `ph:microphone-thin` | 開始錄音 |
 | `ph:stop-circle-thin` | 停止錄音 |
 | `ph:upload-simple-thin` | 上傳聲音 |
+| `ph:magnifying-glass-thin` | Ch. II 書本候選清單搜尋 |
+| `ph:heart-thin` | Ch. II 書本候選清單想讀數 |
+| `ph:arrow-bend-down-left-thin` | Ch. II 書邊心得回覆 |
 | `ph:pencil-simple-thin` | 編輯文章 |
 | `ph:trash-thin` | 刪除文章 |
 | `ph:arrow-right-thin` | Dedication page 翻頁按鈕 |
@@ -86,17 +89,19 @@ https://images.pexels.com/photos/{ID}/...jpeg?auto=compress&cs=tinysrgb&w={width
 | --- | --- |
 | jsDelivr | Iconify runtime |
 | Google Fonts | 字體 |
-| Pexels CDN | 圖片 |
 | Firebase JS SDK | Auth、Firestore、Storage、Analytics |
+| Firebase Cloud Functions | 書本搜尋 proxy，避免 API key 出現在前端 |
+| Google Books API | Ch. II 書本候選清單搜尋與封面 metadata |
+| Open Library APIs | Ch. II 書名搜尋與封面候選 |
 
-Firebase SDK 以 browser ESM CDN 載入：
+Firebase SDK 透過 npm 套件與 Vite 打包：
 
 ```text
-https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js
-https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js
-https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js
-https://www.gstatic.com/firebasejs/12.7.0/firebase-storage.js
-https://www.gstatic.com/firebasejs/12.7.0/firebase-analytics.js
+firebase/app
+firebase/auth
+firebase/firestore
+firebase/storage
+firebase/analytics
 ```
 
 ## Embedded Assets
@@ -140,7 +145,7 @@ https://www.gstatic.com/firebasejs/12.7.0/firebase-analytics.js
 
 | 類別 | 來源 | 可商用 | 授權 |
 | --- | --- | --- | --- |
-| 圖片 | Pexels | 是 | Pexels License |
+| 圖片 | AI 生成 / 使用者提供素材 | 是 | 專案所有者 |
 | 字體 | Google Fonts | 是 | SIL OFL 1.1 |
 | 圖示 | Phosphor Icons | 是 | MIT |
 | 圖示 runtime | Iconify | 是 | MIT |
