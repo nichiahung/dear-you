@@ -1,48 +1,31 @@
 # Assets and Licensing
 
-文件最後更新：2026-04-24
+文件最後更新：2026-05-02
 
 本文件記錄《致 · 妳 — A Love Letter in Chapters》使用的圖片、字體、圖示、CDN、內嵌素材、配色與授權。
 
-## Images
-
-所有背景與章節扉頁圖片來自 [Pexels](https://www.pexels.com/)，採用 [Pexels License](https://www.pexels.com/license/)。
-
-| 用途 | Pexels 頁面 | 直連 URL |
-| --- | --- | --- |
-| 封面背景，藕色玫瑰花束 | [photo/16039162](https://www.pexels.com/photo/a-close-up-of-beige-and-pink-roses-16039162/) | `images.pexels.com/photos/16039162/pexels-photo-16039162.jpeg` |
-
 ## Generated Images
 
-章節 banner 為 AI 生成專案素材，依照封面藕色玫瑰視覺語言延伸，並分別對應各章功能文字。素材輸出為無白邊寬幅 banner，約 3:1 比例、420px 高，供 CSS `background-size: cover` 裁切顯示。
+封面背景與章節 banner 為 AI 生成專案素材，依照藕色玫瑰視覺語言延伸。封面背景輸出為 WebP，分桌機與手機裁切；章節素材輸出為無白邊寬幅 banner，約 3:1 比例、420px 高，供 CSS `background-size: cover` 裁切顯示。
 
 | 用途 | 檔案 | 主題 |
 | --- | --- | --- |
-| Ch. I Letters banner | `assets/banners/letters-banner.png` | 寫給妳的信：玫瑰、信封、手寫信紙 |
-| Ch. II Margins banner | `assets/banners/margins-banner.png` | 書頁邊的字：玫瑰、翻開的書、書頁邊緣 |
-| Ch. III Chronicles banner | `assets/banners/chronicles-banner.png` | 我們的編年史：玫瑰、時鐘、回憶紙張 |
-| Ch. IV Works banner | `assets/banners/voices-banner.png` | 孩子的作品：玫瑰、音樂盒、溫柔紀念感 |
+| 首頁封面背景 Desktop | `public/assets/backgrounds/cover-floral-desktop.webp` | 藕色玫瑰、奶油白花、柔焦情書封面背景 |
+| 首頁封面背景 Mobile | `public/assets/backgrounds/cover-floral-mobile.webp` | 直式藕色玫瑰花束背景，中央保留文字留白 |
+| 首頁封面背景 Desktop options | `public/assets/backgrounds/cover-floral-desktop-option-*.webp` | 可替換候選版本 |
+| 首頁封面背景 Mobile options | `public/assets/backgrounds/cover-floral-mobile-option-*.webp` | 可替換候選版本 |
+| Ch. I Letters banner | `public/assets/banners/letters-banner.png` | 寫給妳的信：玫瑰、信封、手寫信紙 |
+| Ch. II Margins banner | `public/assets/banners/margins-banner.png` | 書頁邊的字：玫瑰、翻開的書、書頁邊緣 |
+| Ch. III Chronicles banner | `public/assets/banners/chronicles-banner.png` | 我們的編年史：玫瑰、時鐘、回憶紙張 |
+| Ch. IV Works banner | `public/assets/banners/voices-banner.png` | 孩子的作品：玫瑰、音樂盒、溫柔紀念感 |
 
 生日彩蛋角色素材：
 
 | 用途 | 檔案 | 說明 |
 | --- | --- | --- |
-| 生日彩蛋左下角 Happy Birthday 角色 | `assets/characters/birthday-bear-happy.png` | 使用使用者提供的去背玩偶圖，加上 Happy Birthday 對話框並清理為透明 PNG |
-| 生日彩蛋右下角 Mommy Happy Birthday 畫作 | `assets/characters/mommy-birthday-drawing.png` | 使用使用者提供的手繪生日圖延伸為透明貼圖素材 |
-| 生日彩蛋 Marlene 下方驚喜圖 | `assets/characters/marlene-birthday-surprise.png` | 點擊生日彩蛋後顯示在內容頁 Marlene 標題下方 |
-
-目前 URL 格式：
-
-```text
-https://images.pexels.com/photos/{ID}/...jpeg?auto=compress&cs=tinysrgb&w={width}
-```
-
-常用寬度：
-
-```text
-1600 -> 封面背景
-1200 -> 章節扉頁
-```
+| 生日彩蛋左下角 Happy Birthday 角色 | `public/assets/characters/birthday-bear-happy.png` | 使用使用者提供的去背玩偶圖，加上 Happy Birthday 對話框並清理為透明 PNG |
+| 生日彩蛋右下角 Mommy Happy Birthday 畫作 | `public/assets/characters/mommy-birthday-drawing.png` | 使用使用者提供的手繪生日圖延伸為透明貼圖素材 |
+| 生日彩蛋 Marlene 下方驚喜圖 | `public/assets/characters/marlene-birthday-surprise.png` | 點擊生日彩蛋後顯示在內容頁 Marlene 標題下方 |
 
 ## Fonts
 
@@ -106,18 +89,19 @@ https://images.pexels.com/photos/{ID}/...jpeg?auto=compress&cs=tinysrgb&w={width
 | --- | --- |
 | jsDelivr | Iconify runtime |
 | Google Fonts | 字體 |
-| Pexels CDN | 圖片 |
 | Firebase JS SDK | Auth、Firestore、Storage、Analytics |
+| Firebase Cloud Functions | 書本搜尋 proxy，避免 API key 出現在前端 |
+| Google Books API | Ch. II 書本候選清單搜尋與封面 metadata |
 | Open Library APIs | Ch. II 書名搜尋與封面候選 |
 
-Firebase SDK 以 browser ESM CDN 載入：
+Firebase SDK 透過 npm 套件與 Vite 打包：
 
 ```text
-https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js
-https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js
-https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js
-https://www.gstatic.com/firebasejs/12.7.0/firebase-storage.js
-https://www.gstatic.com/firebasejs/12.7.0/firebase-analytics.js
+firebase/app
+firebase/auth
+firebase/firestore
+firebase/storage
+firebase/analytics
 ```
 
 ## Embedded Assets
@@ -161,7 +145,7 @@ https://www.gstatic.com/firebasejs/12.7.0/firebase-analytics.js
 
 | 類別 | 來源 | 可商用 | 授權 |
 | --- | --- | --- | --- |
-| 圖片 | Pexels | 是 | Pexels License |
+| 圖片 | AI 生成 / 使用者提供素材 | 是 | 專案所有者 |
 | 字體 | Google Fonts | 是 | SIL OFL 1.1 |
 | 圖示 | Phosphor Icons | 是 | MIT |
 | 圖示 runtime | Iconify | 是 | MIT |

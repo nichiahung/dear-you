@@ -1,6 +1,6 @@
 # Roadmap and Agent Notes
 
-文件最後更新：2026-04-24
+文件最後更新：2026-05-02
 
 本文件記錄後續功能、技術債，以及給 AI agent 的維護注意事項。
 
@@ -74,10 +74,12 @@
 
 ## Technical Debt
 
-- `index.html` 已經很大，後續若功能繼續增加，可考慮拆成 Vite app。
-- Firebase client 與 fallback 邏輯目前都在單檔中，改動時要避免初始化順序問題。
-- `type="module"` Firebase script 與一般 script 之間靠 `dearYouCloudReady` event 銜接，不能移除。
+- 前端已拆成 Vite app；後續新增功能優先放在 `src/core`、`src/features` 或 `src/services`，避免把 `src/app.js` 繼續膨脹。
+- Birthday、Chronicles、Margins、Works、entry repository 已拆出；`src/app.js` 目前保留 bootstrap、章節切換、editor/media save flow 與 inline handler bridge。
+- Firebase client、entry repository 與 IndexedDB fallback 已拆到 `src/services`；改資料模型時仍需同步 cloud/local 兩側。
+- `src/services/firebaseCloud.js` 與 `src/app.js` 之間仍靠 `dearYouCloudReady` event 銜接，不能移除。
 - `initCloudStore()` 會先啟用 cloud，再背景執行 local migration；migration 失敗不應阻止 cloud read。
+- `/api/searchBooks` rewrite 已用 Firebase Hosting + Functions emulator 驗證；Vite dev server 不支援該 rewrite。
 - Firestore shared path 是 `books/dear-you`，不要回到 `users/{uid}` 作為主要資料源。
 - 圖片與錄音目前靠 Storage URL 顯示；如果新增 external URL，要保持 render path 相容。
 

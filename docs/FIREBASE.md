@@ -1,6 +1,6 @@
 # Firebase Architecture
 
-文件最後更新：2026-04-24
+文件最後更新：2026-05-02
 
 本文件記錄目前 Firebase 架構、資料路徑、rules 與部署流程。
 
@@ -16,21 +16,125 @@ hosting: https://dearyou-bfffc.web.app
 ```text
 .firebaserc
 firebase.json
+functions/
 firestore.rules
 storage.rules
 ```
 
-## Firebase SDK
+## Frontend Build
 
-`index.html` 使用 browser ESM CDN，不需要 bundler。
+前端使用 Vite 8 與 npm 版 Firebase Web SDK。Firebase Hosting 的 public 目錄是 Vite build output：
 
 ```text
-firebase-app.js
-firebase-analytics.js
-firebase-auth.js
-firebase-firestore.js
-firebase-storage.js
+source: index.html, src/**, public/assets/**
+build: npm run build
+hosting public: dist
 ```
+
+主要前端模組：
+
+```text
+src/app.js                       -> app bootstrap / chapter switching / feature wiring
+src/styles.css                   -> site styles
+src/core/*                       -> constants, DOM helpers, media helpers, entry normalization
+src/features/*                   -> birthday, chronicles, editor, margins, works modules
+src/services/firebaseCloud.js    -> Firebase Auth / Firestore / Storage bridge
+src/services/entryRepository.js  -> cloud/local read-write facade
+src/services/localStore.js       -> IndexedDB fallback
+```
+
+## Cloud Functions
+
+`functions/index.js` 提供書本搜尋 proxy：
+
+```text
+GET /api/searchBooks?q={book title}
+```
+
+Hosting 透過 rewrite 將 `/api/searchBooks` 導到 `searchBooks` function。
+
+搜尋順序：
+
+```text
+Google Books API regional/title variants -> Open Library API -> normalized book results
+```
+
+Google Books 會對同一個 query 做多組後端查詢：
+
+```text
+q={query}&country=TW
+q=intitle:{query}&country=TW
+中文 query 額外加 langRestrict=zh
+```
+
+這讓繁中書名、中文譯名、以及標題精準搜尋的命中率比單次 Google Books 查詢穩定。
+
+回傳資料：
+
+```js
+{
+  books: [
+    {
+      id: "google-...",
+      provider: "google",
+      providerId: "...",
+      title: "書名",
+      author: "作者",
+      year: "2020",
+      coverUrl: "https://...",
+      isbn: "978..."
+    }
+  ]
+}
+```
+
+Google Books key 使用 Firebase Secret，不寫在前端：
+
+```bash
+firebase functions:secrets:set GOOGLE_BOOKS_API_KEY --project dearyou-bfffc
+```
+
+本機或 function 尚未部署時，前端會 fallback 到 Open Library client-side search。
+
+## Local Emulator Validation
+
+Vite dev server 不會套用 Firebase Hosting rewrite：
+
+```text
+http://localhost:5173/api/searchBooks -> Vite HTML fallback
+```
+
+要驗證正式 rewrite 行為，先 build，再啟動 Hosting + Functions emulators：
+
+```bash
+npm run build
+cd functions && npm install && cd ..
+firebase emulators:start --only hosting,functions --project dearyou-bfffc
+```
+
+Hosting emulator 預設使用 `5000`，若 port 被占用會改用其他 port，例如本次驗證為：
+
+```text
+Hosting   127.0.0.1:5002
+Functions 127.0.0.1:5001
+```
+
+驗證 rewrite：
+
+```bash
+curl "http://127.0.0.1:5002/api/searchBooks?q=Norwegian%20Wood"
+```
+
+本次驗證結果：
+
+```text
+GET /api/searchBooks?q=Norwegian%20Wood -> 200 application/json
+response.books.length -> 4
+GET /api/searchBooks                  -> 400 {"error":"missing_query"}
+POST /api/searchBooks?q=test          -> 405 {"error":"method_not_allowed"}
+```
+
+本機 emulator 若無 Secret Manager 權限或 `functions/.secret.local`，`GOOGLE_BOOKS_API_KEY` 會取不到；Google Books 可能 429，但 function 仍應 fallback 到 Open Library 並回傳 JSON。
 
 ## Authentication
 
@@ -79,6 +183,8 @@ books/dear-you/entries/{entryId}
     bookId: "ol-works-OL...",
     book: {
       id: "ol-works-OL...",
+      provider: "openlibrary",
+      providerId: "/works/OL...",
       title: "Norwegian Wood",
       author: "Haruki Murakami",
       coverUrl: "https://covers.openlibrary.org/b/id/2237620-M.jpg",
@@ -173,6 +279,7 @@ request.auth != null && request.auth.token.email in allowedAuthors
 Hosting：
 
 ```bash
+npm run build
 firebase deploy --only hosting --project dearyou-bfffc
 ```
 
@@ -207,6 +314,8 @@ Google Photos / Google URL 討論：
 ## Agent Notes
 
 - 不要把正式儲存退回 IndexedDB-only。
+- Hosting 部署前要先 `npm run build`，不要直接部署原始 `index.html`。
+- `/api/searchBooks` rewrite 需用 Firebase Hosting emulator 或部署環境驗證；不要用 Vite dev server 的 `/api/searchBooks` 結果判斷。
 - 修改資料模型時同步更新 rules、前端 render/save 邏輯與本文件。
 - 新增 media provider 時保留 `source` 欄位，避免混淆 Storage URL、external URL、local Blob。
 - Firebase API key 是 public config，不是 secret；不要把它當作敏感密碼處理。
