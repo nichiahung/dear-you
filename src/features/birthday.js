@@ -2,6 +2,10 @@ import { MARLENE_BIRTHDAY } from '../core/constants.js';
 
 const BIRTHDAY_MAGIC_STORAGE_KEY = 'birthdayMagicEnabled';
 const BIRTHDAY_MAGIC_PREVIEW_STORAGE_KEY = 'birthdayMagicPreviewEnabled';
+const BIRTHDAY_FLOWERS = [
+  { src: 'assets/characters/birthday-flower-smile.png', className: 'flower-smile' },
+  { src: 'assets/characters/birthday-flower-pink.png', className: 'flower-pink' }
+];
 
 const PETAL_TEMPLATES = [
   `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
@@ -87,6 +91,54 @@ export function createBirthdayFeature({ showView, loadEntries }) {
     if (!container) return;
     container.innerHTML = '';
     container.style.display = 'none';
+  }
+
+  function showContentFlowerDrift(){
+    const container = document.getElementById('birthdayFlowerDrift');
+    if (!container || !birthdayMagicEnabled) return;
+    if (!document.getElementById('app')?.classList.contains('visible')) return;
+
+    container.innerHTML = '';
+    container.style.display = 'block';
+
+    const count = window.innerWidth <= 640 ? 4 : 5;
+    for (let i = 0; i < count; i++) {
+      const flowerAsset = BIRTHDAY_FLOWERS[i % BIRTHDAY_FLOWERS.length];
+      const flower = document.createElement('div');
+      flower.className = `birthday-floating-flower ${flowerAsset.className}`;
+      flower.style.left = `${8 + Math.random() * 84}vw`;
+      flower.style.setProperty('--flower-size', `${window.innerWidth <= 640 ? 30 + Math.random() * 14 : 38 + Math.random() * 22}px`);
+      flower.style.setProperty('--flower-dur', `${18 + Math.random() * 10}s`);
+      flower.style.setProperty('--flower-delay', `${-Math.random() * 16}s`);
+      flower.style.setProperty('--flower-drift', `${(Math.random() - 0.5) * 180}px`);
+      flower.style.setProperty('--flower-sway', `${4.6 + Math.random() * 2.4}s`);
+      flower.style.setProperty('--flower-rot-start', `${Math.random() * 60 - 30}deg`);
+      flower.style.setProperty('--flower-rot-end', `${Math.random() * 180 - 90}deg`);
+
+      const img = document.createElement('img');
+      img.src = flowerAsset.src;
+      img.alt = '';
+      img.decoding = 'async';
+      flower.appendChild(img);
+      container.appendChild(flower);
+    }
+  }
+
+  function stopContentFlowerDrift(){
+    const container = document.getElementById('birthdayFlowerDrift');
+    if (!container) return;
+    container.innerHTML = '';
+    container.style.display = 'none';
+  }
+
+  function startPetalEffects(){
+    createPetalRain();
+    showContentFlowerDrift();
+  }
+
+  function stopPetalEffects(){
+    stopPetalRain();
+    stopContentFlowerDrift();
   }
 
   function showBirthdayBear(){
@@ -176,7 +228,8 @@ export function createBirthdayFeature({ showView, loadEntries }) {
     if (!isBirthdayToday()) return;
 
     document.body.classList.add('birthday-mode');
-    createPetalRain();
+    if (birthdayMagicEnabled) startPetalEffects();
+    else stopPetalEffects();
 
     const coverLabel = document.querySelector('.cover-label');
     if (coverLabel) coverLabel.textContent = 'Happy Birthday, my love';
@@ -194,7 +247,7 @@ export function createBirthdayFeature({ showView, loadEntries }) {
 
   function removeBirthdayMagic({ hideStickers = true } = {}){
     document.body.classList.remove('birthday-mode');
-    stopPetalRain();
+    stopPetalEffects();
     if (hideStickers) {
       hideBirthdayBear();
       hideBirthdayDrawing();
@@ -252,25 +305,12 @@ export function createBirthdayFeature({ showView, loadEntries }) {
 
   function setBirthdayMagicEnabled(enabled) {
     birthdayMagicEnabled = enabled;
-    previewBirthdayMode = enabled && !isActualBirthdayToday() && isPreviewToggleEnabled();
     writeBirthdayMagicPreference(birthdayMagicPreferenceKey(), enabled);
     syncBirthdayToggle();
 
-    if (enabled) {
-      applyBirthdayMagic();
-      if (document.getElementById('app')?.classList.contains('visible')) {
-        showBirthdayBear();
-        showBirthdayDrawing();
-      }
-    } else {
-      const keepBirthdayStickers = isActualBirthdayToday();
-      previewBirthdayMode = false;
-      removeBirthdayMagic({ hideStickers: !keepBirthdayStickers });
-      if (keepBirthdayStickers && document.getElementById('app')?.classList.contains('visible')) {
-        showBirthdayBear();
-        showBirthdayDrawing();
-      }
-    }
+    if (!isBirthdayToday()) return;
+    if (enabled) startPetalEffects();
+    else stopPetalEffects();
   }
 
   function initBirthdayToggle() {
@@ -284,16 +324,11 @@ export function createBirthdayFeature({ showView, loadEntries }) {
     }
 
     button.hidden = false;
+    previewBirthdayMode = !isActualBirthdayToday() && isPreviewToggleEnabled();
     const savedPreference = readBirthdayMagicPreference(birthdayMagicPreferenceKey());
     birthdayMagicEnabled = savedPreference ?? isActualBirthdayToday();
-    previewBirthdayMode = birthdayMagicEnabled && !isActualBirthdayToday() && isPreviewToggleEnabled();
     syncBirthdayToggle();
-
-    if (birthdayMagicEnabled) {
-      applyBirthdayMagic();
-    } else {
-      removeBirthdayMagic();
-    }
+    applyBirthdayMagic();
   }
 
   async function waitForOpeningFonts() {
@@ -339,6 +374,9 @@ export function createBirthdayFeature({ showView, loadEntries }) {
     if (shouldShowBirthdayStickers()) {
       showBirthdayBear();
       showBirthdayDrawing();
+    }
+    if (birthdayMagicEnabled) {
+      showContentFlowerDrift();
     }
     loadEntries();
   }
