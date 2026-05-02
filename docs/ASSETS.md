@@ -63,6 +63,7 @@
 | `ph:paint-brush-thin` | Ch. IV Works |
 | `ph:squares-four-thin` | Ch. IV Works 全部分類 |
 | `ph:trophy-thin` | Ch. IV Works 獎狀 / 獎盃分類 |
+| `ph:presentation-chart-thin` | Ch. IV Works Show & Tell 分類 |
 | `ph:feather-thin` | New Entry |
 | `ph:camera-thin` | 新增圖片 |
 | `ph:microphone-thin` | 開始錄音 |
