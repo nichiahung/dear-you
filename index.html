@@ -294,6 +294,10 @@
       <label>Work Type · 作品分類</label>
       <div class="work-type-options" id="workTypeOptions"></div>
     </div>
+    <div class="field work-child-field" id="workChildField">
+      <label>Child · 誰的作品</label>
+      <div class="work-child-options" id="workChildOptions"></div>
+    </div>
     <div class="field" id="mediaField">
       <label>Memories · 圖片與聲音</label>
       <div class="media-tools">
@@ -301,7 +305,7 @@
         <button class="media-btn" id="recBtn"><span class="iconify" data-icon="ph:microphone-thin"></span>錄音</button>
         <button class="media-btn" id="uploadAudioBtn"><span class="iconify" data-icon="ph:upload-simple-thin"></span>上傳聲音</button>
         <input type="file" id="fImages" accept="image/*" multiple style="display:none">
-        <input type="file" id="fAudio" accept="audio/*" style="display:none">
+        <input type="file" id="fAudio" accept="audio/*,audio/x-m4a,.m4a" style="display:none">
       </div>
       <div class="media-preview" id="mediaPreview"></div>
     </div>
@@ -336,6 +340,11 @@
       <button type="button" class="primary" id="imageCaptionEditorSave">完成</button>
     </div>
   </div>
+</div>
+
+<div id="undoToast" class="undo-toast" aria-live="polite" hidden>
+  <span id="undoToastMsg"></span>
+  <button type="button" onclick="undoDelete()">復原</button>
 </div>
 
 </body>

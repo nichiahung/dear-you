@@ -5,11 +5,14 @@ import {
   CATEGORY_PLACEHOLDERS,
   DEFAULT_FEATURED_IMAGE_INDEX,
   DEFAULT_WORK_TYPE,
+  DEFAULT_WORK_CHILD,
+  WORK_CHILDREN,
   WORK_TYPES
 } from './core/constants.js';
 import {
   inferImageFocus
 } from './core/media.js';
+import { extractLocationFromImage } from './core/exifLocation.js';
 import { createPointerReorder } from './core/pointerReorder.js';
 import { createBirthdayFeature } from './features/birthday.js';
 
@@ -60,7 +63,8 @@ function getEditorActions() {
       openEditor: (entry, defaults) => openEditor(entry, defaults),
       setCurrentCategory: (category) => {
         currentCategory = category;
-      }
+      },
+      softDeleteEntry: (id) => softDeleteEntry(id)
     }));
   }
   return editorActionsPromise;
@@ -108,7 +112,12 @@ let draftAudios=[];
 let mediaRecorder=null;
 let recordChunks=[];
 let selectedWorkType='drawing';
+let selectedWorkChild='kris';
+let selectedFeaturedImageIndex=DEFAULT_FEATURED_IMAGE_INDEX;
+let pendingDeleteId=null;
+let pendingDeleteTimer=null;
 let currentWorkFilter='all';
+let currentChildFilter='all';
 let isSavingEntry=false;
 let imageCaptionEditorIndex=null;
 let imageCaptionCropper=null;
@@ -206,13 +215,14 @@ async function startFocusDrag(...args) { return (await getChroniclesFeature()).s
 
 async function loadEntries() {
   await ensureCloudStore();
-  const list=await getAllEntries(currentCategory);
+  const rawList=await getAllEntries(currentCategory);
+  const list = pendingDeleteId != null ? rawList.filter(e => String(e.id) !== String(pendingDeleteId)) : rawList;
   const container=document.getElementById('entries');
   const countEl=document.getElementById('sectionCount');
   const isVoices = currentCategory === 'voices';
   const isMargins = currentCategory === 'margins';
   const workFilters = document.getElementById('workFilters');
-  if (workFilters) workFilters.style.display = isVoices ? 'grid' : 'none';
+  if (workFilters) workFilters.style.display = isVoices ? 'flex' : 'none';
   document.body.classList.toggle('chronicles-mode', currentCategory === 'chronicles');
   document.body.classList.toggle('margins-mode', isMargins);
 
@@ -229,11 +239,15 @@ async function loadEntries() {
   }
 
   const works = isVoices ? await loadWorksModule() : null;
-  const visibleList = isVoices && currentWorkFilter !== 'all'
-    ? list.filter(entry => works.workForEntry(entry).type === currentWorkFilter)
+  const visibleList = isVoices
+    ? list.filter(entry => {
+        const w = works.workForEntry(entry);
+        return (currentWorkFilter === 'all' || w.type === currentWorkFilter)
+            && (currentChildFilter === 'all' || w.child === currentChildFilter);
+      })
     : list;
 
-  if (isVoices) works.renderWorkFilters(list, currentWorkFilter);
+  if (isVoices) works.renderWorkFilters(list, currentWorkFilter, currentChildFilter);
 
   countEl.textContent = visibleList.length>0 ? `· ${visibleList.length} ${visibleList.length===1?'entry':'entries'}` : '';
 
@@ -277,7 +291,14 @@ async function openEditor(entry=null, defaults={}){
   selectedWorkType = isWorksEditor
     ? works.workForEntry(entry || { category: 'voices', work: defaults.work || { type: currentWorkFilter !== 'all' ? currentWorkFilter : DEFAULT_WORK_TYPE } }).type
     : DEFAULT_WORK_TYPE;
+  selectedWorkChild = isWorksEditor
+    ? works.workForEntry(entry || { category: 'voices', work: defaults.work || { child: currentChildFilter !== 'all' ? currentChildFilter : DEFAULT_WORK_CHILD } }).child
+    : DEFAULT_WORK_CHILD;
+  selectedFeaturedImageIndex = isWorksEditor
+    ? (works.workForEntry(entry || {}).featuredImageIndex ?? DEFAULT_FEATURED_IMAGE_INDEX)
+    : DEFAULT_FEATURED_IMAGE_INDEX;
   renderWorkTypeOptions(isWorksEditor);
+  renderWorkChildOptions(isWorksEditor);
   if (margins) await margins.renderEditorFields(entry, defaults, isMarginsEditor);
   else {
     document.querySelectorAll('.standard-entry-field').forEach(field => {
@@ -333,6 +354,29 @@ function selectWorkType(type) {
   renderWorkTypeOptions(true);
 }
 
+function renderWorkChildOptions(visible) {
+  const field = document.getElementById('workChildField');
+  const wrap = document.getElementById('workChildOptions');
+  if (!field || !wrap) return;
+  field.style.display = visible ? 'block' : 'none';
+  if (!visible) { wrap.innerHTML = ''; return; }
+  wrap.innerHTML = Object.entries(WORK_CHILDREN).map(([child, data]) => `
+    <button type="button" class="work-type-option ${selectedWorkChild === child ? 'active' : ''}" onclick="selectWorkChild('${child}')">
+      <span>${data.label}</span>
+    </button>
+  `).join('');
+}
+
+function selectWorkChild(child) {
+  selectedWorkChild = WORK_CHILDREN[child] ? child : DEFAULT_WORK_CHILD;
+  renderWorkChildOptions(true);
+}
+
+function setChildFilter(child) {
+  currentChildFilter = child === 'all' || WORK_CHILDREN[child] ? child : 'all';
+  loadEntries();
+}
+
 function closeEditor(){
   if (isSavingEntry) return;
   closeImageCaptionEditor();
@@ -379,16 +423,18 @@ async function saveEntry(){
   if (currentCategory === 'chronicles') {
     const { normalizeChronicleImageMeta } = await getChroniclesFeature();
     const year = Number((entry.date || '').slice(0, 4)) || new Date().getFullYear();
+    const gpsLocations = [...new Set(draftImages.map(img => img.gpsLocation).filter(Boolean))];
     entry.chronicle = {
       year,
       eyebrow: String(year),
-      coverImagePath: draftImages.find(image => image.path)?.path || null
+      coverImagePath: draftImages.find(image => image.path)?.path || null,
+      location: gpsLocations.join(' · ') || ''
     };
     entry.images = draftImages.map(normalizeChronicleImageMeta);
   }
   if (currentCategory === 'voices') {
     const { normalizeWork } = await loadWorksModule();
-    const work = normalizeWork({ type: selectedWorkType, featuredImageIndex: DEFAULT_FEATURED_IMAGE_INDEX });
+    const work = normalizeWork({ type: selectedWorkType, child: selectedWorkChild, featuredImageIndex: selectedFeaturedImageIndex });
     entry.work = work;
   }
   if(editingId){
@@ -398,7 +444,8 @@ async function saveEntry(){
     if (currentCategory === 'chronicles') {
       entry.chronicle = {
         ...(old?.chronicle || {}),
-        ...entry.chronicle
+        ...entry.chronicle,
+        location: entry.chronicle.location || old?.chronicle?.location || ''
       };
     }
     if (currentCategory === 'voices') {
@@ -475,7 +522,11 @@ async function addImages(e){
   const files = Array.from(e.target.files);
   for (const f of files) {
     const focus = await inferImageFocus(f);
-    draftImages.push({blob:f,url:URL.createObjectURL(f),name:f.name,...focus,fit:'cover'});
+    const imgRef = {blob:f,url:URL.createObjectURL(f),name:f.name,...focus,fit:'cover'};
+    draftImages.push(imgRef);
+    if (currentCategory === 'chronicles') {
+      extractLocationFromImage(f).then(loc => { if (loc) imgRef.gpsLocation = loc; });
+    }
   }
   e.target.value='';
   await renderMediaPreview();
@@ -495,6 +546,8 @@ function removeMedia(type,idx){
     if(draftImages[idx].blob&&draftImages[idx].url)URL.revokeObjectURL(draftImages[idx].url);
     draftImages.splice(idx,1);
     if (imageCaptionEditorIndex !== null && imageCaptionEditorIndex > idx) imageCaptionEditorIndex -= 1;
+    if (selectedFeaturedImageIndex === idx) selectedFeaturedImageIndex = 0;
+    else if (selectedFeaturedImageIndex > idx) selectedFeaturedImageIndex -= 1;
   }
   else{
     if(draftAudios[idx].blob&&draftAudios[idx].url)URL.revokeObjectURL(draftAudios[idx].url);
@@ -516,6 +569,13 @@ function reorderDraftImages(fromIndex, toIndex) {
   if (toIndex < 0 || toIndex >= draftImages.length) return false;
   const [image] = draftImages.splice(fromIndex, 1);
   draftImages.splice(toIndex, 0, image);
+  if (selectedFeaturedImageIndex === fromIndex) {
+    selectedFeaturedImageIndex = toIndex;
+  } else if (fromIndex < selectedFeaturedImageIndex && toIndex >= selectedFeaturedImageIndex) {
+    selectedFeaturedImageIndex -= 1;
+  } else if (fromIndex > selectedFeaturedImageIndex && toIndex <= selectedFeaturedImageIndex) {
+    selectedFeaturedImageIndex += 1;
+  }
   renderMediaPreview();
   return true;
 }
@@ -638,10 +698,46 @@ function announceReorder(message) {
   });
 }
 
+async function softDeleteEntry(id) {
+  if (pendingDeleteTimer) {
+    clearTimeout(pendingDeleteTimer);
+    await deleteEntryFromDB(pendingDeleteId);
+  }
+  const entry = await getEntry(id);
+  pendingDeleteId = id;
+  const label = entry?.title ? `「${entry.title}」` : '這一篇';
+  const toast = document.getElementById('undoToast');
+  const msg = document.getElementById('undoToastMsg');
+  if (toast && msg) { msg.textContent = `已移除 ${label}`; toast.hidden = false; }
+  pendingDeleteTimer = setTimeout(async () => {
+    await deleteEntryFromDB(pendingDeleteId);
+    pendingDeleteId = null;
+    pendingDeleteTimer = null;
+    if (toast) toast.hidden = true;
+  }, 5000);
+  loadEntries();
+}
+
+function undoDelete() {
+  if (pendingDeleteId == null) return;
+  clearTimeout(pendingDeleteTimer);
+  pendingDeleteId = null;
+  pendingDeleteTimer = null;
+  const toast = document.getElementById('undoToast');
+  if (toast) toast.hidden = true;
+  loadEntries();
+}
+
 async function renderMediaPreview(){
   const wrap=document.getElementById('mediaPreview');
+  const isVoices = currentCategory === 'voices';
   const { mediaPreviewMarkup } = await loadEditorModule();
-  wrap.innerHTML=mediaPreviewMarkup(draftImages, draftAudios);
+  wrap.innerHTML=mediaPreviewMarkup(draftImages, draftAudios, isVoices, selectedFeaturedImageIndex);
+}
+
+function selectFeaturedImage(idx) {
+  selectedFeaturedImageIndex = idx;
+  renderMediaPreview();
 }
 
 async function toggleRecord(){
@@ -846,7 +942,7 @@ async function toggleRecord(){
         const previousCategory = currentCategory;
         currentCategory=t.dataset.cat;
         closePhotoLightbox();
-        if (currentCategory === 'voices' && previousCategory !== 'voices') currentWorkFilter = 'all';
+        if (currentCategory === 'voices' && previousCategory !== 'voices') { currentWorkFilter = 'all'; currentChildFilter = 'all'; }
         const cat=CATEGORY_LABELS[currentCategory];
         document.getElementById('sectionTitle').textContent=cat.en;
         updateFrontispiece(currentCategory);
@@ -896,7 +992,11 @@ Object.assign(window, {
   selectMarginAuthor,
   selectMarginBook,
   selectMarginEditorAuthor,
+  selectFeaturedImage,
+  selectWorkChild,
+  undoDelete,
   selectWorkType,
+  setChildFilter,
   setWorkFilter,
   startImageReorder,
   startChroniclePhotoReorder,

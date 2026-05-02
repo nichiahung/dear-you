@@ -42,7 +42,7 @@ export function renderEntry(e, isVoice=false, getWorkForEntry=null) {
           <button onclick="confirmDelete('${entryId}')"><span class="iconify" data-icon="ph:trash-thin"></span>remove</button>
         </span>
       </div>
-      ${isVoice && workType ? `<div class="work-type-tag"><span class="iconify" data-icon="${workType.icon}"></span>${work.label}</div>` : ''}
+      ${isVoice && workType ? `<div class="work-tags"><div class="work-type-tag"><span class="iconify" data-icon="${workType.icon}"></span>${work.label}</div><div class="work-child-tag">${work.childLabel}</div></div>` : ''}
       ${e.title?`<h3 class="entry-title">${escapeHtml(e.title)}</h3>`:''}
       ${e.body?renderMarkdown(e.body, e.bodyFormat, 'entry-body markdown-content'):''}
       ${images?`<div class="entry-media">${images}</div>`:''}
@@ -51,13 +51,15 @@ export function renderEntry(e, isVoice=false, getWorkForEntry=null) {
   `;
 }
 
-export function mediaPreviewMarkup(draftImages, draftAudios) {
+export function mediaPreviewMarkup(draftImages, draftAudios, isVoices=false, featuredImageIndex=0) {
   const imgs=draftImages.map((i,idx)=>{
     const caption = (i.caption || '').trim();
+    const isFeatured = isVoices && idx === featuredImageIndex;
     return `
-    <div class="media-chip media-chip-image" tabindex="0" data-reorder-index="${idx}" onpointerdown="startImageReorder(event, ${idx})" onkeydown="handleImageReorderKey(event, ${idx})">
+    <div class="media-chip media-chip-image ${isFeatured ? 'is-featured' : ''}" tabindex="0" data-reorder-index="${idx}" onpointerdown="startImageReorder(event, ${idx})" onkeydown="handleImageReorderKey(event, ${idx})">
       <span class="media-drag-handle" aria-hidden="true"><span class="iconify" data-icon="ph:dots-three-vertical-thin"></span></span>
       <img src="${i.url}" alt="" draggable="false">
+      ${isVoices ? `<button type="button" class="media-featured-btn ${isFeatured ? 'active' : ''}" onclick="selectFeaturedImage(${idx})" title="${isFeatured ? '封面圖片' : '設為封面'}"><span class="iconify" data-icon="${isFeatured ? 'ph:star-fill' : 'ph:star-thin'}"></span></button>` : ''}
       <div class="media-order-controls" aria-label="調整圖片順序">
         <button type="button" class="media-order-btn" onclick="moveMedia('image',${idx},-1)" ${idx === 0 ? 'disabled' : ''} aria-label="往前移一張" title="往前移一張"><span class="iconify" data-icon="ph:arrow-left-thin"></span></button>
         <span class="media-order-label">${idx + 1}</span>
@@ -78,15 +80,13 @@ export function mediaPreviewMarkup(draftImages, draftAudios) {
   return imgs + auds;
 }
 
-export function createEditorActions({ deleteEntryFromDB, getEntry, loadEntries, openEditor, setCurrentCategory }) {
+export function createEditorActions({ deleteEntryFromDB, getEntry, loadEntries, openEditor, setCurrentCategory, softDeleteEntry }) {
   async function editEntry(id) {
     await openEditor(await getEntry(id));
   }
 
   async function confirmDelete(id) {
-    if (!confirm('確定要移除這一篇嗎？')) return;
-    await deleteEntryFromDB(id);
-    loadEntries();
+    await softDeleteEntry(id);
   }
 
   function openChronicleYearEditor(year) {

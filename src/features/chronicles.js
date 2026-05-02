@@ -194,6 +194,7 @@ function renderChronicleAlbum(year, entries) {
   const dateStr = primary.date ? formatDate(primary.date) : String(year);
   const body = primary.body || '';
   const title = primary.title || `${year}`;
+  const locations = [...new Set(orderedEntries.map(e => e.chronicle?.location).filter(Boolean))].join(' · ');
   chronicleLightboxSets[lightboxSetId] = allImages
     .map((record, index) => ({
       url: mediaUrl(record.item),
@@ -210,6 +211,7 @@ function renderChronicleAlbum(year, entries) {
         <div class="chronicle-memory-copy">
           <span class="chronicle-memory-date">${escapeHtml(dateStr)}</span>
           <h3 class="chronicle-memory-title">${escapeHtml(title)}</h3>
+          ${locations ? `<div class="chronicle-location-tags">${locations.split(' · ').map(loc => `<span class="chronicle-location-tag"><span class="iconify" data-icon="ph:map-pin-thin"></span>${escapeHtml(loc)}</span>`).join('')}</div>` : ''}
           ${body
             ? renderMarkdown(body, primary.bodyFormat, 'entry-body markdown-content')
             : `<div class="chronicle-text-placeholder">這一年還等著被寫下來。</div>`}

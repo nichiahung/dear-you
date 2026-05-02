@@ -8,6 +8,13 @@ export const WORK_TYPES = {
 export const DEFAULT_WORK_TYPE = 'drawing';
 export const DEFAULT_FEATURED_IMAGE_INDEX = 1;
 
+export const WORK_CHILDREN = {
+  kris:   { key: 'kris',   label: 'Kris' },
+  jasper: { key: 'jasper', label: 'Jasper' },
+  both:   { key: 'both',   label: 'Both' }
+};
+export const DEFAULT_WORK_CHILD = 'kris';
+
 export const CATEGORY_LABELS = {
   letters: { zh: '寫給妳的信', en: 'Letters', chNum: 'Chapter I' },
   margins: { zh: '書頁邊的字', en: 'Margins', chNum: 'Chapter II' },
