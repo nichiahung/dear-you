@@ -161,11 +161,29 @@ function mergeLocations(...values) {
   return [...new Set(values.flatMap(locationParts))].join(' · ');
 }
 
+function setChronicleLocationHint(message, state='idle') {
+  const hint = document.getElementById('chronicleLocationHint');
+  if (!hint) return;
+  hint.textContent = message;
+  hint.dataset.state = state;
+}
+
+function applyChronicleLocation(location) {
+  if (!location) return;
+  const input = document.getElementById('fChronicleLocation');
+  if (!input || currentCategory !== 'chronicles') return;
+  input.value = mergeLocations(input.value, location);
+  setChronicleLocationHint(`已從照片讀取：${location}`, 'found');
+}
+
 async function resolveDraftImageLocations() {
   await Promise.all(draftImages.map(async (image) => {
     if (!image?.locationPromise) return;
     const location = await image.locationPromise.catch(() => null);
-    if (location) image.gpsLocation = location;
+    if (location) {
+      image.gpsLocation = location;
+      applyChronicleLocation(location);
+    }
   }));
 }
 
@@ -316,6 +334,10 @@ async function openEditor(entry=null, defaults={}){
       ? (entry?.chronicle?.location || defaults.chronicle?.location || defaults.location || '')
       : '';
   }
+  setChronicleLocationHint(
+    isChroniclesEditor ? '可手動輸入；有 GPS 的新照片會自動填入。' : '',
+    'idle'
+  );
   selectedWorkType = isWorksEditor
     ? works.workForEntry(entry || { category: 'voices', work: defaults.work || { type: currentWorkFilter !== 'all' ? currentWorkFilter : DEFAULT_WORK_TYPE } }).type
     : DEFAULT_WORK_TYPE;
@@ -561,8 +583,14 @@ async function addImages(e){
     const imgRef = {blob:f,url:URL.createObjectURL(f),name:f.name,...focus,fit:'cover'};
     draftImages.push(imgRef);
     if (currentCategory === 'chronicles') {
+      setChronicleLocationHint('正在讀取照片 GPS...', 'loading');
       imgRef.locationPromise = extractLocationFromImage(f).then(loc => {
-        if (loc) imgRef.gpsLocation = loc;
+        if (loc) {
+          imgRef.gpsLocation = loc;
+          applyChronicleLocation(loc);
+        } else {
+          setChronicleLocationHint('這張照片沒有可用 GPS；可以手動輸入地點。', 'missing');
+        }
         return loc;
       });
     }

@@ -4805,6 +4805,22 @@
 
   .field textarea { min-height: 180px; }
 
+  .field-hint {
+    margin-top: 8px;
+    font-size: 12px;
+    line-height: 1.6;
+    letter-spacing: 1px;
+    color: var(--ink-faded);
+  }
+
+  .field-hint[data-state="found"] {
+    color: var(--mauve);
+  }
+
+  .field-hint[data-state="missing"] {
+    color: var(--rose-deep);
+  }
+
   .markdown-editor {
     width: 100%;
     border-bottom: 1px solid var(--line);
