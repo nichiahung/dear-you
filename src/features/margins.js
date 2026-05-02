@@ -1,19 +1,45 @@
 import { MARGIN_AUTHORS, MARGIN_BOOKS_SETTING_KEY, MARGIN_BOOK_STATUSES } from '../core/constants.js';
 import { escapeHtml, formatDate, jsArg } from '../core/dom.js';
+import {
+  focusMarkdown,
+  getMarkdownValue,
+  initMarkdownEditors,
+  markdownToPlainText,
+  renderMarkdown,
+  setMarkdownPlaceholder,
+  setMarkdownValue
+} from '../core/richText.js';
 import { isLocalEntryId } from '../services/localStore.js';
 
 export function normalizeMargin(margin, entry={}) {
   const authorKey = MARGIN_AUTHORS[margin?.authorKey] ? margin.authorKey : (margin?.author === 'Marlene' ? 'her' : 'me');
+  const quotes = normalizeMarginQuotes(margin);
   return {
     authorKey,
     author: margin?.author || MARGIN_AUTHORS[authorKey].label,
     bookId: margin?.bookId || '',
     book: margin?.book ? normalizeMarginBook(margin.book) : null,
-    page: margin?.page || '',
-    quote: margin?.quote || '',
+    page: quotes[0]?.page || margin?.page || '',
+    quote: quotes[0]?.quote || margin?.quote || '',
+    quoteFormat: quotes[0]?.quoteFormat || margin?.quoteFormat || '',
+    quotes,
     bookmarked: Boolean(margin?.bookmarked),
     createdFromTitle: entry?.title || ''
   };
+}
+
+export function normalizeMarginQuotes(margin) {
+  const quotes = Array.isArray(margin?.quotes) ? margin.quotes : [];
+  const normalized = quotes
+    .map(item => ({
+      page: item?.page || '',
+      quote: item?.quote || '',
+      quoteFormat: item?.quoteFormat || ''
+    }))
+    .filter(item => item.page || markdownToPlainText(item.quote, item.quoteFormat));
+  if (normalized.length) return normalized;
+  if (margin?.quote || margin?.page) return [{ page: margin.page || '', quote: margin.quote || '', quoteFormat: margin.quoteFormat || '' }];
+  return [];
 }
 
 export function normalizeMarginBook(book) {
@@ -130,6 +156,10 @@ export function createMarginsFeature({ getEntry, getSetting, getCurrentCategory,
         ${renderReadingQueue()}
       </div>
     `;
+    await setMarginQuoteDrafts('marginComposer', [{ page: '', quote: '' }]);
+    await setMarkdownPlaceholder('marginBodyInput', selectedMarginBook()
+      ? `關於《${selectedMarginBook().title}》，我想留下...`
+      : '先選一本書，再留下心得');
   }
   
   function renderEmptyMarginsThread() {
@@ -158,7 +188,8 @@ export function createMarginsFeature({ getEntry, getSetting, getCurrentCategory,
     const sourceIcon = isCloudEntry
       ? '<span class="iconify entry-source cloud" data-icon="ph:cloud-thin" title="Cloud"></span>'
       : '<span class="iconify entry-source local" data-icon="ph:bookmark-simple-thin" title="Local only"></span>';
-    const page = margin.page ? `<span class="margin-page-chip">p. ${escapeHtml(margin.page)}</span>` : '';
+    const pages = [...new Set(margin.quotes.map(item => item.page).filter(Boolean))];
+    const page = pages.map(item => `<span class="margin-page-chip">p. ${escapeHtml(item)}</span>`).join('');
     const bookTitle = book ? escapeHtml(book.title) : 'Unselected book';
     const authorLine = book?.author ? ` · ${escapeHtml(book.author)}` : '';
   
@@ -173,8 +204,8 @@ export function createMarginsFeature({ getEntry, getSetting, getCurrentCategory,
           </div>
           <span class="entry-date margin-note-date">${dateStr}</span>
         </div>
-        ${margin.quote ? `<blockquote class="margin-quote">${escapeHtml(margin.quote)}</blockquote>` : ''}
-        ${entry.body?`<div class="margin-reflection"><span class="margin-reflection-label">Reflection · 心得</span><div class="entry-body">${escapeHtml(entry.body)}</div></div>`:''}
+        ${margin.quotes.length ? `<div class="margin-quotes">${margin.quotes.map(renderMarginQuote).join('')}</div>` : ''}
+        ${entry.body?`<div class="margin-reflection"><span class="margin-reflection-label">Reflection · 心得</span>${renderMarkdown(entry.body, entry.bodyFormat, 'entry-body markdown-content')}</div>`:''}
         <div class="margin-note-footer">
           <span class="entry-actions">
             ${sourceIcon}
@@ -186,6 +217,17 @@ export function createMarginsFeature({ getEntry, getSetting, getCurrentCategory,
           </button>
         </div>
       </article>
+    `;
+  }
+
+  function renderMarginQuote(item, index) {
+    if (!markdownToPlainText(item.quote, item.quoteFormat)) return '';
+    const page = item.page ? `<span class="margin-quote-page">p. ${escapeHtml(item.page)}</span>` : '';
+    return `
+      <figure class="margin-quote-block">
+        ${page}
+        <blockquote class="margin-quote">${renderMarkdown(item.quote, item.quoteFormat, 'markdown-content margin-quote-content')}</blockquote>
+      </figure>
     `;
   }
   
@@ -287,19 +329,16 @@ export function createMarginsFeature({ getEntry, getSetting, getCurrentCategory,
             ${marginBooks.length ? marginBooks.map(renderMarginBookOption).join('') : '<option>先從右側加入一本書</option>'}
           </select>
         </div>
-        <div class="margin-composer-grid">
-          <div class="field">
-            <label>Quote · 我讀到的句子</label>
-            <textarea id="marginQuoteInput" placeholder="把那句停下來想起對方的文字放在這裡"></textarea>
-          </div>
-          <div class="field">
-            <label>Page · 頁碼</label>
-            <input type="text" id="marginPageInput" placeholder="p. 42">
-          </div>
+        <div class="field">
+          <label>Quotes · 我讀到的句子</label>
+          <div class="margin-quote-list" id="marginComposerQuoteList"></div>
+          <button class="margin-quote-add" type="button" onclick="addMarginQuote('marginComposer')">
+            <span class="iconify" data-icon="ph:plus-thin"></span>新增 quote
+          </button>
         </div>
         <div class="field">
           <label>Reflection · 心得</label>
-          <textarea id="marginBodyInput" placeholder="${book ? `關於《${escapeHtml(book.title)}》，我想留下...` : '先選一本書，再留下心得'}"></textarea>
+          <div id="marginBodyInput" data-markdown-editor data-placeholder="${book ? `關於《${escapeHtml(book.title)}》，我想留下...` : '先選一本書，再留下心得'}"></div>
         </div>
         <div class="margin-composer-actions">
           <div class="margin-author-toggle" aria-label="留言者">
@@ -328,6 +367,60 @@ export function createMarginsFeature({ getEntry, getSetting, getCurrentCategory,
     const select = document.getElementById('marginBookSelect') || document.getElementById('marginEditorBook');
     if (select && select.value !== selectedMarginBookId) select.value = selectedMarginBookId || '';
     if (rerender && getCurrentCategory() === 'margins') loadEntries();
+  }
+
+  function quoteListId(scope) {
+    return `${scope}QuoteList`;
+  }
+
+  function quoteEditorId(scope, index) {
+    return `${scope}QuoteEditor${index}`;
+  }
+
+  async function readMarginQuoteDrafts(scope) {
+    const wrap = document.getElementById(quoteListId(scope));
+    if (!wrap) return [];
+    return Promise.all(Array.from(wrap.querySelectorAll('[data-margin-quote-row]')).map(async (row, index) => ({
+      page: row.querySelector('[data-margin-quote-page]')?.value.trim() || '',
+      quote: await getMarkdownValue(row.querySelector('[data-markdown-editor]')?.id || quoteEditorId(scope, index)),
+      quoteFormat: 'markdown'
+    })));
+  }
+
+  async function setMarginQuoteDrafts(scope, quotes) {
+    const wrap = document.getElementById(quoteListId(scope));
+    if (!wrap) return;
+    const drafts = quotes.length ? quotes : [{ page: '', quote: '' }];
+    wrap.innerHTML = drafts.map((item, index) => `
+      <div class="margin-quote-editor-row" data-margin-quote-row>
+        <div class="field margin-quote-text-field">
+          <label>Quote ${index + 1}</label>
+          <div class="margin-quote-input" id="${quoteEditorId(scope, index)}" data-markdown-editor data-placeholder="把那句停下來想起對方的文字放在這裡"></div>
+        </div>
+        <div class="field margin-quote-page-field">
+          <label>Page · 頁碼</label>
+          <input type="text" data-margin-quote-page value="${escapeHtml(item.page || '')}" placeholder="p. 42">
+        </div>
+        <button class="margin-quote-remove" type="button" onclick="removeMarginQuote('${scope}', ${index})" ${drafts.length === 1 ? 'disabled' : ''} aria-label="移除 quote ${index + 1}">
+          <span class="iconify" data-icon="ph:trash-thin"></span>
+        </button>
+      </div>
+    `).join('');
+    await initMarkdownEditors(wrap);
+    await Promise.all(drafts.map((item, index) => setMarkdownValue(quoteEditorId(scope, index), item.quote || '', item.quoteFormat)));
+  }
+
+  async function addMarginQuote(scope) {
+    const drafts = await readMarginQuoteDrafts(scope);
+    await setMarginQuoteDrafts(scope, [...drafts, { page: '', quote: '' }]);
+    await focusMarkdown(quoteEditorId(scope, drafts.length));
+  }
+
+  async function removeMarginQuote(scope, index) {
+    const drafts = await readMarginQuoteDrafts(scope);
+    if (drafts.length <= 1) return;
+    drafts.splice(index, 1);
+    await setMarginQuoteDrafts(scope, drafts);
   }
   
   function toggleBookSearchDrawer() {
@@ -460,15 +553,14 @@ export function createMarginsFeature({ getEntry, getSetting, getCurrentCategory,
     await loadMarginBooks();
     const bookId = document.getElementById('marginBookSelect')?.value || selectedMarginBookId || '';
     const book = marginBooks.find(item => item.id === bookId) || null;
-    const quote = document.getElementById('marginQuoteInput')?.value.trim() || '';
-    const page = document.getElementById('marginPageInput')?.value.trim() || '';
-    const body = document.getElementById('marginBodyInput')?.value.trim() || '';
+    const quotes = (await readMarginQuoteDrafts('marginComposer')).filter(item => item.page || markdownToPlainText(item.quote, item.quoteFormat));
+    const body = await getMarkdownValue('marginBodyInput');
   
     if (!book) {
       alert('請先從右側加入或選擇一本書。');
       return;
     }
-    if (!quote && !body) {
+    if (!quotes.some(item => markdownToPlainText(item.quote, item.quoteFormat)) && !markdownToPlainText(body, 'markdown')) {
       alert('請至少留下一句讀到的文字或心得。');
       return;
     }
@@ -480,6 +572,7 @@ export function createMarginsFeature({ getEntry, getSetting, getCurrentCategory,
       date: new Date().toISOString().slice(0,10),
       title: book.title,
       body,
+      bodyFormat: 'markdown',
       images: [],
       audios: [],
       margin: {
@@ -487,8 +580,10 @@ export function createMarginsFeature({ getEntry, getSetting, getCurrentCategory,
         author: author.label,
         bookId: book.id,
         book,
-        page,
-        quote,
+        page: quotes[0]?.page || '',
+        quote: quotes[0]?.quote || '',
+        quoteFormat: quotes[0]?.quoteFormat || 'markdown',
+        quotes,
         bookmarked: false
       },
       createdAt: Date.now(),
@@ -507,14 +602,15 @@ export function createMarginsFeature({ getEntry, getSetting, getCurrentCategory,
       margin: {
         ...margin,
         quote: margin.quote,
-        page: margin.page
+        page: margin.page,
+        quotes: margin.quotes
       },
       body: ''
     });
-    document.getElementById('marginEditorBody')?.focus();
+    await focusMarkdown('marginEditorBody');
   }
 
-  function renderMarginEditorFields(entry, defaults={}, visible=false) {
+  async function renderMarginEditorFields(entry, defaults={}, visible=false) {
     document.querySelectorAll('.standard-entry-field').forEach(field => {
       field.style.display = visible ? 'none' : 'block';
     });
@@ -543,18 +639,17 @@ export function createMarginsFeature({ getEntry, getSetting, getCurrentCategory,
         updateMarginEditorPlaceholder();
       };
     }
-    document.getElementById('marginEditorQuote').value = margin.quote || defaults.quote || '';
-    document.getElementById('marginEditorPage').value = margin.page || defaults.page || '';
-    document.getElementById('marginEditorBody').value = entry?.body || defaults.body || '';
-    updateMarginEditorPlaceholder();
+    await setMarginQuoteDrafts('marginEditor', margin.quotes.length ? margin.quotes : [{ quote: defaults.quote || '', page: defaults.page || '' }]);
+    await setMarkdownValue('marginEditorBody', entry?.body || defaults.body || '', entry?.bodyFormat || defaults.bodyFormat);
+    await updateMarginEditorPlaceholder();
     renderMarginEditorAuthors();
   }
   
-  function updateMarginEditorPlaceholder() {
+  async function updateMarginEditorPlaceholder() {
     const bodyInput = document.getElementById('marginEditorBody');
     if (!bodyInput) return;
     const book = selectedMarginBook();
-    bodyInput.placeholder = book ? `關於《${book.title}》，我想留下...` : '先選一本書，再留下心得';
+    await setMarkdownPlaceholder('marginEditorBody', book ? `關於《${book.title}》，我想留下...` : '先選一本書，再留下心得');
   }
   
   function renderMarginEditorAuthors() {
@@ -574,15 +669,14 @@ export function createMarginsFeature({ getEntry, getSetting, getCurrentCategory,
     await loadMarginBooks();
     const bookId = document.getElementById('marginEditorBook')?.value || selectedMarginBookId || '';
     const book = marginBooks.find(item => item.id === bookId) || null;
-    const quote = document.getElementById('marginEditorQuote')?.value.trim() || '';
-    const page = document.getElementById('marginEditorPage')?.value.trim() || '';
-    const reflection = document.getElementById('marginEditorBody')?.value.trim() || '';
+    const quotes = (await readMarginQuoteDrafts('marginEditor')).filter(item => item.page || markdownToPlainText(item.quote, item.quoteFormat));
+    const reflection = await getMarkdownValue('marginEditorBody');
 
     if (!book) {
       alert('請先從右側加入或選擇一本書。');
       return null;
     }
-    if (!quote && !reflection) {
+    if (!quotes.some(item => markdownToPlainText(item.quote, item.quoteFormat)) && !markdownToPlainText(reflection, 'markdown')) {
       alert('請至少留下一句讀到的文字或心得。');
       return null;
     }
@@ -595,6 +689,7 @@ export function createMarginsFeature({ getEntry, getSetting, getCurrentCategory,
       date: date || new Date().toISOString().slice(0,10),
       title: book.title,
       body: reflection,
+      bodyFormat: 'markdown',
       images: [],
       audios: [],
       margin: {
@@ -602,8 +697,10 @@ export function createMarginsFeature({ getEntry, getSetting, getCurrentCategory,
         author: author.label,
         bookId: book.id,
         book,
-        page,
-        quote,
+        page: quotes[0]?.page || '',
+        quote: quotes[0]?.quote || '',
+        quoteFormat: quotes[0]?.quoteFormat || 'markdown',
+        quotes,
         bookmarked: Boolean(old?.margin?.bookmarked)
       },
       createdAt: old?.createdAt || Date.now(),
@@ -615,6 +712,7 @@ export function createMarginsFeature({ getEntry, getSetting, getCurrentCategory,
 
   return {
     addBookFromSearch,
+    addMarginQuote,
     buildEditorEntry,
     cycleMarginBookStatus,
     handleBookSearchKey,
@@ -622,6 +720,7 @@ export function createMarginsFeature({ getEntry, getSetting, getCurrentCategory,
     handleQueueBookActionKey,
     loadMarginBooks,
     removeMarginBook,
+    removeMarginQuote,
     renderEditorFields: renderMarginEditorFields,
     renderWorkspace: renderMarginsWorkspace,
     replyToMargin,

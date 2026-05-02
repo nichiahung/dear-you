@@ -10,6 +10,13 @@ import {
 import {
   inferImageFocus
 } from './core/media.js';
+import { createPointerReorder } from './core/pointerReorder.js';
+import {
+  getMarkdownValue,
+  markdownToPlainText,
+  setMarkdownPlaceholder,
+  setMarkdownValue
+} from './core/richText.js';
 import {
   normalizeWork,
   renderWorkFilters,
@@ -31,6 +38,7 @@ const {
 } = createEntryRepository();
 
 function showView(name) {
+  document.body.classList.remove('app-booting');
   document.body.classList.toggle('stage-open', name !== 'app');
   document.getElementById('lockView').classList.toggle('active', name==='lock');
   document.getElementById('dedicationView').classList.toggle('active', name==='dedication');
@@ -46,6 +54,37 @@ let mediaRecorder=null;
 let recordChunks=[];
 let selectedWorkType='drawing';
 let currentWorkFilter='all';
+let isSavingEntry=false;
+let imageCaptionEditorIndex=null;
+let imageCaptionCropper=null;
+let imageCaptionCropDirty=false;
+let cropperModulePromise=null;
+
+const IMAGE_CAPTION_CROPPER_TEMPLATE = `
+  <cropper-canvas background>
+    <cropper-image></cropper-image>
+    <cropper-shade hidden></cropper-shade>
+    <cropper-handle action="select" plain></cropper-handle>
+    <cropper-selection initial-coverage="1" movable resizable>
+      <cropper-grid role="grid" bordered covered></cropper-grid>
+      <cropper-crosshair centered></cropper-crosshair>
+      <cropper-handle action="move" theme-color="rgba(255, 255, 255, 0.35)"></cropper-handle>
+      <cropper-handle action="n-resize"></cropper-handle>
+      <cropper-handle action="e-resize"></cropper-handle>
+      <cropper-handle action="s-resize"></cropper-handle>
+      <cropper-handle action="w-resize"></cropper-handle>
+      <cropper-handle action="ne-resize"></cropper-handle>
+      <cropper-handle action="nw-resize"></cropper-handle>
+      <cropper-handle action="se-resize"></cropper-handle>
+      <cropper-handle action="sw-resize"></cropper-handle>
+    </cropper-selection>
+  </cropper-canvas>
+`;
+
+function loadCropper() {
+  if (!cropperModulePromise) cropperModulePromise = import('cropperjs');
+  return cropperModulePromise;
+}
 
 const birthday = createBirthdayFeature({
   showView,
@@ -58,6 +97,7 @@ const {
   hideBirthdayBear,
   hideBirthdayDrawing,
   initBirthdayToggle,
+  resumeDailyUnlock,
   toggleBirthdayMagic,
   waitForOpeningFonts
 } = birthday;
@@ -69,10 +109,12 @@ const chronicles = createChroniclesFeature({
 });
 
 const {
+  closeChroniclePhotoBrowser,
   closeFocusEditor,
   closePhotoLightbox,
   centerFocusEditor,
   endFocusDrag,
+  handleChronicleReorderKey,
   handleChroniclePhotoClick,
   handlePhotoFrameKey,
   moveFocusDrag,
@@ -85,6 +127,7 @@ const {
   scrollToChronicleYear,
   setFocusAxis,
   setFocusFromPointer,
+  startChroniclePhotoReorder,
   startFocusDrag
 } = chronicles;
 
@@ -104,6 +147,13 @@ const {
   openChronicleYearEditor
 } = editorActions;
 
+const imagePointerReorder = createPointerReorder({
+  itemSelector: '.media-chip-image',
+  getItems: () => document.querySelectorAll('#mediaPreview .media-chip-image'),
+  onReorder: (fromIndex, toIndex) => reorderDraftImages(fromIndex, toIndex),
+  onAnnounce: announceReorder
+});
+
 const margins = createMarginsFeature({
   getEntry,
   getSetting,
@@ -116,6 +166,7 @@ const margins = createMarginsFeature({
 
 const {
   addBookFromSearch,
+  addMarginQuote,
   buildEditorEntry: buildMarginEditorEntry,
   cycleMarginBookStatus,
   handleBookSearchKey,
@@ -123,6 +174,7 @@ const {
   handleQueueBookActionKey,
   loadMarginBooks,
   removeMarginBook,
+  removeMarginQuote,
   renderEditorFields: renderMarginEditorFields,
   renderWorkspace: renderMarginsWorkspace,
   replyToMargin,
@@ -195,13 +247,13 @@ async function openEditor(entry=null, defaults={}){
   document.getElementById('fDate').value=entry?.date||defaults.date||new Date().toISOString().slice(0,10);
   document.getElementById('fTitle').value=entry?.title||defaults.title||'';
   document.getElementById('fTitle').placeholder=CATEGORY_PLACEHOLDERS[editorCategory].title;
-  document.getElementById('fBody').value=entry?.body||defaults.body||'';
-  document.getElementById('fBody').placeholder=CATEGORY_PLACEHOLDERS[editorCategory].body;
+  await setMarkdownPlaceholder('fBody', CATEGORY_PLACEHOLDERS[editorCategory].body);
+  await setMarkdownValue('fBody', entry?.body||defaults.body||'', entry?.bodyFormat || defaults.bodyFormat);
   selectedWorkType = isWorksEditor
     ? workForEntry(entry || { category: 'voices', work: defaults.work || { type: currentWorkFilter !== 'all' ? currentWorkFilter : DEFAULT_WORK_TYPE } }).type
     : DEFAULT_WORK_TYPE;
   renderWorkTypeOptions(isWorksEditor);
-  renderMarginEditorFields(entry, defaults, isMarginsEditor);
+  await renderMarginEditorFields(entry, defaults, isMarginsEditor);
 
   draftImages.forEach(i=>URL.revokeObjectURL(i.url));
   draftAudios.forEach(a=>URL.revokeObjectURL(a.url));
@@ -222,6 +274,7 @@ async function openEditor(entry=null, defaults={}){
   }
 
   renderMediaPreview();
+  setEditorSaving(false);
   document.getElementById('editor').classList.add('visible');
 }
 
@@ -248,6 +301,9 @@ function selectWorkType(type) {
 }
 
 function closeEditor(){
+  if (isSavingEntry) return;
+  closeImageCaptionEditor();
+  setEditorSaving(false);
   document.getElementById('editor').classList.remove('visible');
   if(mediaRecorder&&mediaRecorder.state==='recording') mediaRecorder.stop();
   draftImages.forEach(i=>{if(i.blob&&i.url)URL.revokeObjectURL(i.url);});
@@ -256,20 +312,22 @@ function closeEditor(){
 }
 
 async function saveEntry(){
+  if (isSavingEntry) return;
   const date=document.getElementById('fDate').value;
   const title=document.getElementById('fTitle').value.trim();
-  const body=document.getElementById('fBody').value.trim();
+  const body=await getMarkdownValue('fBody');
+  const hasImages = draftImages.length > 0;
 
   if (currentCategory === 'margins') {
     const entry = await buildMarginEditorEntry({ date, editingId });
     if (!entry) return;
-    await saveEntryToDB(entry);
-    closeEditor();
-    loadEntries();
+    await runEditorSaveState(async () => {
+      await saveEntryToDB(entry);
+    }, false);
     return;
   }
 
-  if(!title&&!body&&draftImages.length===0&&draftAudios.length===0){
+  if(!title&&!markdownToPlainText(body, 'markdown')&&draftImages.length===0&&draftAudios.length===0){
     alert('please add something — words, an image, or a voice ✦');
     return;
   }
@@ -278,6 +336,7 @@ async function saveEntry(){
     category:currentCategory,
     date:date||new Date().toISOString().slice(0,10),
     title,body,
+    bodyFormat:'markdown',
     images:draftImages,
     audios:draftAudios,
     updatedAt:Date.now()
@@ -314,9 +373,64 @@ async function saveEntry(){
   } else {
     entry.createdAt=Date.now();
   }
-  await saveEntryToDB(entry);
-  closeEditor();
-  loadEntries();
+  await runEditorSaveState(async () => {
+    await saveEntryToDB(entry);
+  }, hasImages);
+}
+
+async function runEditorSaveState(saveTask, hasImages=false) {
+  isSavingEntry = true;
+  setEditorSaving(true, {
+    phase: 'saving',
+    title: hasImages ? 'Saving photos' : 'Saving entry',
+    copy: hasImages ? '正在保存圖片與文字' : '正在保存這一頁'
+  });
+  try {
+    await saveTask();
+    setEditorSaving(true, {
+      phase: 'saved',
+      title: 'Saved',
+      copy: hasImages ? '照片已保存' : '內容已保存'
+    });
+    await new Promise(resolve => setTimeout(resolve, 520));
+    isSavingEntry = false;
+    closeEditor();
+    loadEntries();
+  } catch (err) {
+    console.error(err);
+    setEditorSaving(true, {
+      phase: 'error',
+      title: 'Save failed',
+      copy: '儲存失敗，請再試一次'
+    });
+    setTimeout(() => {
+      isSavingEntry = false;
+      setEditorSaving(false);
+    }, 900);
+  }
+}
+
+function setEditorSaving(active, options={}) {
+  const editor = document.getElementById('editor');
+  const card = editor?.querySelector('.modal-card');
+  const state = document.getElementById('editorSaveState');
+  const title = document.getElementById('editorSaveTitle');
+  const copy = document.getElementById('editorSaveCopy');
+  const saveBtn = document.getElementById('saveBtn');
+  const cancelBtn = document.getElementById('cancelBtn');
+  if (!editor || !state || !saveBtn || !cancelBtn) return;
+
+  const phase = options.phase || 'saving';
+  editor.classList.toggle('saving', active);
+  card?.classList.toggle('saving', active);
+  state.classList.toggle('visible', active);
+  state.dataset.phase = phase;
+  state.setAttribute('aria-hidden', active ? 'false' : 'true');
+  if (title && options.title) title.textContent = options.title;
+  if (copy && options.copy) copy.textContent = options.copy;
+  saveBtn.disabled = active;
+  cancelBtn.disabled = active;
+  saveBtn.textContent = active ? (phase === 'saved' ? 'Saved' : 'Saving') : 'Save';
 }
 
 async function addImages(e){
@@ -339,8 +453,10 @@ function addAudioFile(e){
 
 function removeMedia(type,idx){
   if(type==='image'){
+    if (imageCaptionEditorIndex === idx) closeImageCaptionEditor();
     if(draftImages[idx].blob&&draftImages[idx].url)URL.revokeObjectURL(draftImages[idx].url);
     draftImages.splice(idx,1);
+    if (imageCaptionEditorIndex !== null && imageCaptionEditorIndex > idx) imageCaptionEditorIndex -= 1;
   }
   else{
     if(draftAudios[idx].blob&&draftAudios[idx].url)URL.revokeObjectURL(draftAudios[idx].url);
@@ -349,9 +465,139 @@ function removeMedia(type,idx){
   renderMediaPreview();
 }
 
-function updateImageCaption(index, value) {
-  if (!draftImages[index]) return;
-  draftImages[index].caption = value.trim();
+function moveMedia(type, idx, delta) {
+  if (type !== 'image') return;
+  const targetIndex = idx + delta;
+  reorderDraftImages(idx, targetIndex);
+}
+
+function reorderDraftImages(fromIndex, toIndex) {
+  if (!Number.isInteger(fromIndex) || !Number.isInteger(toIndex)) return false;
+  if (fromIndex === toIndex) return false;
+  if (fromIndex < 0 || fromIndex >= draftImages.length) return false;
+  if (toIndex < 0 || toIndex >= draftImages.length) return false;
+  const [image] = draftImages.splice(fromIndex, 1);
+  draftImages.splice(toIndex, 0, image);
+  renderMediaPreview();
+  return true;
+}
+
+function startImageReorder(event, index) {
+  imagePointerReorder.start(event, index);
+}
+
+function handleImageReorderKey(event, index) {
+  if (!event.altKey && !event.metaKey) return;
+  const delta = event.key === 'ArrowLeft' ? -1 : (event.key === 'ArrowRight' ? 1 : 0);
+  if (!delta) return;
+  event.preventDefault();
+  if (reorderDraftImages(index, index + delta)) announceReorder(`照片已移到第 ${index + delta + 1} 張`);
+}
+
+async function openImageCaptionEditor(index) {
+  const image = draftImages[index];
+  const editor = document.getElementById('imageCaptionEditor');
+  const cropperMount = document.getElementById('imageCaptionCropper');
+  const count = document.getElementById('imageCaptionEditorCount');
+  const text = document.getElementById('imageCaptionEditorText');
+  if (!image || !editor || !cropperMount || !text) return;
+  destroyImageCaptionCropper();
+  imageCaptionEditorIndex = index;
+  imageCaptionCropDirty = false;
+  cropperMount.replaceChildren();
+  if (count) count.textContent = `${index + 1} / ${draftImages.length}`;
+  text.value = image.caption || '';
+  editor.classList.add('visible');
+  editor.setAttribute('aria-hidden', 'false');
+  const cropperImage = new Image();
+  cropperImage.alt = image.caption || `照片 ${index + 1}`;
+  cropperImage.src = image.url || '';
+  const { default: Cropper } = await loadCropper();
+  imageCaptionCropper = new Cropper(cropperImage, {
+    container: cropperMount,
+    template: IMAGE_CAPTION_CROPPER_TEMPLATE
+  });
+  requestAnimationFrame(() => cropperMount.focus());
+}
+
+function closeImageCaptionEditor() {
+  const editor = document.getElementById('imageCaptionEditor');
+  const cropperMount = document.getElementById('imageCaptionCropper');
+  const text = document.getElementById('imageCaptionEditorText');
+  if (!editor) return;
+  editor.classList.remove('visible');
+  editor.setAttribute('aria-hidden', 'true');
+  destroyImageCaptionCropper();
+  cropperMount?.replaceChildren();
+  if (text) text.value = '';
+  imageCaptionEditorIndex = null;
+  imageCaptionCropDirty = false;
+}
+
+function destroyImageCaptionCropper() {
+  imageCaptionCropper?.destroy?.();
+  imageCaptionCropper = null;
+}
+
+function canvasToBlob(canvas, type='image/jpeg', quality=0.9) {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (blob) resolve(blob);
+      else reject(new Error('Unable to export cropped image'));
+    }, type, quality);
+  });
+}
+
+function croppedImageName(name='photo') {
+  const base = String(name || 'photo').replace(/\.[^.]+$/, '');
+  return `${base}-cropped.jpg`;
+}
+
+async function saveImageCaptionEditor() {
+  const text = document.getElementById('imageCaptionEditorText');
+  if (imageCaptionEditorIndex === null || !draftImages[imageCaptionEditorIndex] || !text) return;
+  const currentImage = draftImages[imageCaptionEditorIndex];
+  try {
+    const selection = imageCaptionCropDirty ? imageCaptionCropper?.getCropperSelection?.() : null;
+    const canvas = selection ? await selection.$toCanvas() : null;
+    const croppedBlob = canvas ? await canvasToBlob(canvas) : null;
+    const croppedUrl = croppedBlob ? URL.createObjectURL(croppedBlob) : currentImage.url;
+    if (croppedBlob && currentImage.blob && currentImage.url) URL.revokeObjectURL(currentImage.url);
+    draftImages[imageCaptionEditorIndex] = {
+      ...currentImage,
+      blob: croppedBlob || currentImage.blob,
+      url: croppedUrl,
+      name: croppedBlob ? croppedImageName(currentImage.name) : currentImage.name,
+      caption: text.value.trim(),
+      path: croppedBlob ? undefined : currentImage.path,
+      cloud: croppedBlob ? undefined : currentImage.cloud,
+      contentType: croppedBlob ? croppedBlob.type : currentImage.contentType,
+      size: croppedBlob ? croppedBlob.size : currentImage.size
+    };
+    closeImageCaptionEditor();
+    renderMediaPreview();
+  } catch (err) {
+    console.error(err);
+    alert('無法輸出裁切後的圖片，請再試一次或重新上傳圖片。');
+  }
+}
+
+function adjustImageCaptionCropper(action) {
+  const selection = imageCaptionCropper?.getCropperSelection?.();
+  if (!selection) return;
+  if (action === 'zoom-in') selection.$zoom(0.1);
+  if (action === 'zoom-out') selection.$zoom(-0.1);
+  if (action === 'reset') selection.$reset();
+  imageCaptionCropDirty = true;
+}
+
+function announceReorder(message) {
+  const live = document.getElementById('reorderLive');
+  if (!live) return;
+  live.textContent = '';
+  requestAnimationFrame(() => {
+    live.textContent = message;
+  });
 }
 
 function renderMediaPreview(){
@@ -423,11 +669,27 @@ async function toggleRecord(){
     document.getElementById('recBtn').addEventListener('click',toggleRecord);
     document.getElementById('fImages').addEventListener('change',addImages);
     document.getElementById('fAudio').addEventListener('change',addAudioFile);
+    document.getElementById('imageCaptionEditorClose').addEventListener('click',closeImageCaptionEditor);
+    document.getElementById('imageCaptionEditorCancel').addEventListener('click',closeImageCaptionEditor);
+    document.getElementById('imageCaptionEditorSave').addEventListener('click',saveImageCaptionEditor);
+    document.getElementById('imageCaptionCropper').addEventListener('action',()=>{
+      if (imageCaptionCropper) imageCaptionCropDirty = true;
+    });
+    document.querySelectorAll('[data-caption-crop-action]').forEach(button=>{
+      button.addEventListener('click',()=>adjustImageCaptionCropper(button.dataset.captionCropAction));
+    });
+    document.getElementById('imageCaptionEditor').addEventListener('click',(event)=>{
+      if(event.target.id === 'imageCaptionEditor') closeImageCaptionEditor();
+    });
     document.getElementById('photoLightboxClose').addEventListener('click',closePhotoLightbox);
     document.getElementById('photoLightboxPrev').addEventListener('click',()=>movePhotoLightbox(-1));
     document.getElementById('photoLightboxNext').addEventListener('click',()=>movePhotoLightbox(1));
     document.getElementById('photoLightbox').addEventListener('click',(event)=>{
       if(event.target.id === 'photoLightbox') closePhotoLightbox();
+    });
+    document.getElementById('chroniclePhotoBrowserClose').addEventListener('click',closeChroniclePhotoBrowser);
+    document.getElementById('chroniclePhotoBrowser').addEventListener('click',(event)=>{
+      if(event.target.id === 'chroniclePhotoBrowser') closeChroniclePhotoBrowser();
     });
     document.getElementById('focusEditorClose').addEventListener('click',closeFocusEditor);
     document.getElementById('focusEditorCancel').addEventListener('click',closeFocusEditor);
@@ -455,6 +717,11 @@ async function toggleRecord(){
       });
     });
     document.addEventListener('keydown',(event)=>{
+      const captionEditor = document.getElementById('imageCaptionEditor');
+      if(captionEditor?.classList.contains('visible')) {
+        if(event.key === 'Escape') closeImageCaptionEditor();
+        return;
+      }
       const focusEditor = document.getElementById('focusEditor');
       if(focusEditor?.classList.contains('visible')) {
         if(event.key === 'Escape') closeFocusEditor();
@@ -465,6 +732,11 @@ async function toggleRecord(){
         return;
       }
       const lightbox = document.getElementById('photoLightbox');
+      const browser = document.getElementById('chroniclePhotoBrowser');
+      if(browser?.classList.contains('visible')) {
+        if(event.key === 'Escape') closeChroniclePhotoBrowser();
+        return;
+      }
       if(!lightbox?.classList.contains('visible')) return;
       if(event.key === 'Escape') closePhotoLightbox();
       if(event.key === 'ArrowLeft') movePhotoLightbox(-1);
@@ -550,26 +822,35 @@ async function toggleRecord(){
     document.getElementById('bYear').addEventListener('input',e=>{if(e.target.value.length>=4)document.getElementById('bMonth').focus();});
     document.getElementById('bMonth').addEventListener('input',e=>{if(e.target.value.length>=2)document.getElementById('bDay').focus();});
 
-  showView('lock');
+    if (!resumeDailyUnlock()) showView('lock');
   }catch(err){
     console.error('Init error:', err);
+    document.body.classList.remove('app-booting');
+    document.getElementById('lockView')?.classList.add('active');
   }
 })();
 
 Object.assign(window, {
   addBookFromSearch,
+  addMarginQuote,
+  closeChroniclePhotoBrowser,
   confirmDelete,
   cycleMarginBookStatus,
   editEntry,
   handleBookSearchKey,
+  handleImageReorderKey,
+  handleChronicleReorderKey,
   handleChroniclePhotoClick,
   handleMarginNoteKey,
   handleQueueBookActionKey,
   handlePhotoFrameKey,
+  openImageCaptionEditor,
   openChronicleYearEditor,
   openFocusEditor,
+  moveMedia,
   removeMedia,
   removeMarginBook,
+  removeMarginQuote,
   replyToMargin,
   saveMarginReflection,
   scrollToChronicleYear,
@@ -579,7 +860,8 @@ Object.assign(window, {
   selectMarginEditorAuthor,
   selectWorkType,
   setWorkFilter,
+  startImageReorder,
+  startChroniclePhotoReorder,
   toggleBookSearchDrawer,
-  updateImageCaption,
   voteMarginBook
 });
