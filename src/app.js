@@ -150,6 +150,25 @@ function loadCropper() {
   return cropperModulePromise;
 }
 
+function locationParts(value) {
+  return String(value || '')
+    .split('·')
+    .map(part => part.trim())
+    .filter(Boolean);
+}
+
+function mergeLocations(...values) {
+  return [...new Set(values.flatMap(locationParts))].join(' · ');
+}
+
+async function resolveDraftImageLocations() {
+  await Promise.all(draftImages.map(async (image) => {
+    if (!image?.locationPromise) return;
+    const location = await image.locationPromise.catch(() => null);
+    if (location) image.gpsLocation = location;
+  }));
+}
+
 const birthday = createBirthdayFeature({
   showView,
   loadEntries: () => loadEntries()
@@ -274,6 +293,7 @@ async function openEditor(entry=null, defaults={}){
   const cat=CATEGORY_LABELS[editorCategory];
   const isWorksEditor = editorCategory === 'voices';
   const isMarginsEditor = editorCategory === 'margins';
+  const isChroniclesEditor = editorCategory === 'chronicles';
   currentCategory = editorCategory;
   const margins = isMarginsEditor ? await getMarginsFeature() : null;
   const works = isWorksEditor ? await loadWorksModule() : null;
@@ -288,6 +308,14 @@ async function openEditor(entry=null, defaults={}){
   const { setMarkdownPlaceholder, setMarkdownValue } = await loadRichTextModule();
   await setMarkdownPlaceholder('fBody', CATEGORY_PLACEHOLDERS[editorCategory].body);
   await setMarkdownValue('fBody', entry?.body||defaults.body||'', entry?.bodyFormat || defaults.bodyFormat);
+  const chronicleLocationField = document.getElementById('chronicleLocationField');
+  if (chronicleLocationField) chronicleLocationField.style.display = isChroniclesEditor ? 'block' : 'none';
+  const chronicleLocationInput = document.getElementById('fChronicleLocation');
+  if (chronicleLocationInput) {
+    chronicleLocationInput.value = isChroniclesEditor
+      ? (entry?.chronicle?.location || defaults.chronicle?.location || defaults.location || '')
+      : '';
+  }
   selectedWorkType = isWorksEditor
     ? works.workForEntry(entry || { category: 'voices', work: defaults.work || { type: currentWorkFilter !== 'all' ? currentWorkFilter : DEFAULT_WORK_TYPE } }).type
     : DEFAULT_WORK_TYPE;
@@ -423,12 +451,20 @@ async function saveEntry(){
   if (currentCategory === 'chronicles') {
     const { normalizeChronicleImageMeta } = await getChroniclesFeature();
     const year = Number((entry.date || '').slice(0, 4)) || new Date().getFullYear();
+    isSavingEntry = true;
+    setEditorSaving(true, {
+      phase: 'saving',
+      title: hasImages ? 'Saving photos' : 'Saving entry',
+      copy: hasImages ? '正在保存圖片與定位' : '正在保存這一頁'
+    });
+    await resolveDraftImageLocations();
     const gpsLocations = [...new Set(draftImages.map(img => img.gpsLocation).filter(Boolean))];
+    const manualLocation = document.getElementById('fChronicleLocation')?.value.trim() || '';
     entry.chronicle = {
       year,
       eyebrow: String(year),
       coverImagePath: draftImages.find(image => image.path)?.path || null,
-      location: gpsLocations.join(' · ') || ''
+      location: mergeLocations(manualLocation, gpsLocations.join(' · '))
     };
     entry.images = draftImages.map(normalizeChronicleImageMeta);
   }
@@ -525,7 +561,10 @@ async function addImages(e){
     const imgRef = {blob:f,url:URL.createObjectURL(f),name:f.name,...focus,fit:'cover'};
     draftImages.push(imgRef);
     if (currentCategory === 'chronicles') {
-      extractLocationFromImage(f).then(loc => { if (loc) imgRef.gpsLocation = loc; });
+      imgRef.locationPromise = extractLocationFromImage(f).then(loc => {
+        if (loc) imgRef.gpsLocation = loc;
+        return loc;
+      });
     }
   }
   e.target.value='';
