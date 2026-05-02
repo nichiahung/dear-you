@@ -170,9 +170,10 @@ function chronicleImageStyle(item) {
 }
 
 function normalizeChronicleImageMeta(image, index) {
+  const { locationPromise, ...imageMeta } = image || {};
   const baseCrop = normalizeCropConfig(image);
   return {
-    ...image,
+    ...imageMeta,
     role: index === 0 ? 'cover' : 'supporting',
     order: index,
     focalX: baseCrop.focalX,

@@ -9,10 +9,12 @@ const geocodeCache = new Map();
 async function reverseGeocode(latitude, longitude) {
   const key = `${Math.round(latitude * 10)},${Math.round(longitude * 10)}`;
   if (geocodeCache.has(key)) return geocodeCache.get(key);
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), 4500);
   try {
     const resp = await fetch(
       `https://nominatim.openstreetmap.org/reverse?format=json&accept-language=en&lat=${latitude}&lon=${longitude}&zoom=10`,
-      { headers: { 'User-Agent': 'dear-you/1.0' } }
+      { signal: controller.signal }
     );
     if (!resp.ok) { geocodeCache.set(key, null); return null; }
     const data = await resp.json();
@@ -23,6 +25,8 @@ async function reverseGeocode(latitude, longitude) {
   } catch {
     geocodeCache.set(key, null);
     return null;
+  } finally {
+    window.clearTimeout(timeout);
   }
 }
 
