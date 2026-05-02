@@ -2,3 +2,7 @@
 .vite/
 dist/
 node_modules/
+.claude/
+.env
+.env.*
+!.env.example

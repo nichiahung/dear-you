@@ -44,7 +44,11 @@ jobs:
         run: npm ci
 
       - name: Build frontend
-        run: npm run build
+        env:
+          VITE_FIREBASE_API_KEY: ${{ secrets.FIREBASE_WEB_API_KEY }}
+        run: |
+          test -n "$VITE_FIREBASE_API_KEY"
+          npm run build
 
       - name: Install functions dependencies
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_functions }}
