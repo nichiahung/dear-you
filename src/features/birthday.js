@@ -5,7 +5,8 @@ const BIRTHDAY_MAGIC_PREVIEW_STORAGE_KEY = 'birthdayMagicPreviewEnabled';
 const DAILY_UNLOCK_STORAGE_KEY = 'dearYouUnlockedOn';
 const BIRTHDAY_FLOWERS = [
   { src: 'assets/characters/birthday-flower-smile.png', className: 'flower-smile' },
-  { src: 'assets/characters/birthday-flower-pink.png', className: 'flower-pink' }
+  { src: 'assets/characters/birthday-flower-pink.png', className: 'flower-pink' },
+  { src: 'assets/characters/birthday-flower-pink-smile.png', className: 'flower-pink-smile' }
 ];
 
 const PETAL_TEMPLATES = [
