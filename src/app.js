@@ -14,21 +14,6 @@ import {
 } from './core/media.js';
 import { extractLocationFromImage } from './core/exifLocation.js';
 import { createPointerReorder } from './core/pointerReorder.js';
-import {
-  getMarkdownValue,
-  markdownToPlainText,
-  setMarkdownPlaceholder,
-  setMarkdownValue
-} from './core/richText.js';
-import {
-  normalizeWork,
-  renderWorkFilters,
-  workForEntry
-} from './features/works.js';
-
-import { createMarginsFeature } from './features/margins.js';
-import { createChroniclesFeature } from './features/chronicles.js';
-import { createEditorActions, mediaPreviewMarkup, renderEntry } from './features/editor.js';
 import { createBirthdayFeature } from './features/birthday.js';
 
 const {
@@ -40,6 +25,76 @@ const {
   saveEntryToDB,
   setSetting
 } = createEntryRepository();
+
+let cloudInitPromise = null;
+let richTextModulePromise = null;
+let editorModulePromise = null;
+let editorActionsPromise = null;
+let worksModulePromise = null;
+let marginsFeaturePromise = null;
+let chroniclesFeaturePromise = null;
+
+function ensureCloudStore() {
+  if (!cloudInitPromise) cloudInitPromise = initCloudStore();
+  return cloudInitPromise;
+}
+
+function loadRichTextModule() {
+  if (!richTextModulePromise) richTextModulePromise = import('./core/richText.js');
+  return richTextModulePromise;
+}
+
+function loadEditorModule() {
+  if (!editorModulePromise) editorModulePromise = import('./features/editor.js');
+  return editorModulePromise;
+}
+
+function loadWorksModule() {
+  if (!worksModulePromise) worksModulePromise = import('./features/works.js');
+  return worksModulePromise;
+}
+
+function getEditorActions() {
+  if (!editorActionsPromise) {
+    editorActionsPromise = loadEditorModule().then(({ createEditorActions }) => createEditorActions({
+      deleteEntryFromDB,
+      getEntry,
+      loadEntries: () => loadEntries(),
+      openEditor: (entry, defaults) => openEditor(entry, defaults),
+      setCurrentCategory: (category) => {
+        currentCategory = category;
+      },
+      softDeleteEntry: (id) => softDeleteEntry(id)
+    }));
+  }
+  return editorActionsPromise;
+}
+
+function getMarginsFeature() {
+  if (!marginsFeaturePromise) {
+    marginsFeaturePromise = import('./features/margins.js').then(({ createMarginsFeature }) => createMarginsFeature({
+      getEntry,
+      getSetting,
+      getCurrentCategory: () => currentCategory,
+      loadEntries: () => loadEntries(),
+      openEditor: (entry, defaults) => openEditor(entry, defaults),
+      saveEntryToDB,
+      setSetting
+    }));
+  }
+  return marginsFeaturePromise;
+}
+
+function getChroniclesFeature() {
+  if (!chroniclesFeaturePromise) {
+    chroniclesFeaturePromise = import('./features/chronicles.js').then(({ createChroniclesFeature }) => createChroniclesFeature({
+      getEntry,
+      saveEntryToDB,
+      loadEntries: () => loadEntries()
+    }));
+  }
+  return chroniclesFeaturePromise;
+}
 
 function showView(name) {
   document.body.classList.remove('app-booting');
@@ -111,50 +166,6 @@ const {
   waitForOpeningFonts
 } = birthday;
 
-const chronicles = createChroniclesFeature({
-  getEntry,
-  saveEntryToDB,
-  loadEntries: () => loadEntries()
-});
-
-const {
-  closeChroniclePhotoBrowser,
-  closeFocusEditor,
-  closePhotoLightbox,
-  centerFocusEditor,
-  endFocusDrag,
-  handleChronicleReorderKey,
-  handleChroniclePhotoClick,
-  handlePhotoFrameKey,
-  moveFocusDrag,
-  movePhotoLightbox,
-  nudgeFocusEditor,
-  normalizeChronicleImageMeta,
-  openFocusEditor,
-  renderChroniclesTimeline,
-  saveFocusEditor,
-  scrollToChronicleYear,
-  setFocusAxis,
-  setFocusFromPointer,
-  startChroniclePhotoReorder,
-  startFocusDrag
-} = chronicles;
-
-const editorActions = createEditorActions({
-  deleteEntryFromDB,
-  getEntry,
-  loadEntries: () => loadEntries(),
-  openEditor: (entry, defaults) => openEditor(entry, defaults),
-  setCurrentCategory: (category) => { currentCategory = category; },
-  softDeleteEntry: (id) => softDeleteEntry(id)
-});
-
-const {
-  confirmDelete,
-  editEntry,
-  openChronicleYearEditor
-} = editorActions;
-
 const imagePointerReorder = createPointerReorder({
   itemSelector: '.media-chip-image',
   getItems: () => document.querySelectorAll('#mediaPreview .media-chip-image'),
@@ -162,40 +173,48 @@ const imagePointerReorder = createPointerReorder({
   onAnnounce: announceReorder
 });
 
-const margins = createMarginsFeature({
-  getEntry,
-  getSetting,
-  getCurrentCategory: () => currentCategory,
-  loadEntries: () => loadEntries(),
-  openEditor: (entry, defaults) => openEditor(entry, defaults),
-  saveEntryToDB,
-  setSetting
-});
+async function confirmDelete(...args) { return (await getEditorActions()).confirmDelete(...args); }
+async function editEntry(...args) { return (await getEditorActions()).editEntry(...args); }
+async function openChronicleYearEditor(...args) { return (await getEditorActions()).openChronicleYearEditor(...args); }
 
-const {
-  addBookFromSearch,
-  addMarginQuote,
-  buildEditorEntry: buildMarginEditorEntry,
-  cycleMarginBookStatus,
-  handleBookSearchKey,
-  handleMarginNoteKey,
-  handleQueueBookActionKey,
-  loadMarginBooks,
-  removeMarginBook,
-  removeMarginQuote,
-  renderEditorFields: renderMarginEditorFields,
-  renderWorkspace: renderMarginsWorkspace,
-  replyToMargin,
-  saveMarginReflection,
-  searchOpenLibraryBooks,
-  selectMarginAuthor,
-  selectMarginBook,
-  selectMarginEditorAuthor,
-  toggleBookSearchDrawer,
-  voteMarginBook
-} = margins;
+async function addBookFromSearch(...args) { return (await getMarginsFeature()).addBookFromSearch(...args); }
+async function addMarginQuote(...args) { return (await getMarginsFeature()).addMarginQuote(...args); }
+async function cycleMarginBookStatus(...args) { return (await getMarginsFeature()).cycleMarginBookStatus(...args); }
+async function handleBookSearchKey(...args) { return (await getMarginsFeature()).handleBookSearchKey(...args); }
+async function handleMarginNoteKey(...args) { return (await getMarginsFeature()).handleMarginNoteKey(...args); }
+async function handleQueueBookActionKey(...args) { return (await getMarginsFeature()).handleQueueBookActionKey(...args); }
+async function removeMarginBook(...args) { return (await getMarginsFeature()).removeMarginBook(...args); }
+async function removeMarginQuote(...args) { return (await getMarginsFeature()).removeMarginQuote(...args); }
+async function replyToMargin(...args) { return (await getMarginsFeature()).replyToMargin(...args); }
+async function saveMarginReflection(...args) { return (await getMarginsFeature()).saveMarginReflection(...args); }
+async function searchOpenLibraryBooks(...args) { return (await getMarginsFeature()).searchOpenLibraryBooks(...args); }
+async function selectMarginAuthor(...args) { return (await getMarginsFeature()).selectMarginAuthor(...args); }
+async function selectMarginBook(...args) { return (await getMarginsFeature()).selectMarginBook(...args); }
+async function selectMarginEditorAuthor(...args) { return (await getMarginsFeature()).selectMarginEditorAuthor(...args); }
+async function toggleBookSearchDrawer(...args) { return (await getMarginsFeature()).toggleBookSearchDrawer(...args); }
+async function voteMarginBook(...args) { return (await getMarginsFeature()).voteMarginBook(...args); }
+
+async function closeChroniclePhotoBrowser(...args) { return (await getChroniclesFeature()).closeChroniclePhotoBrowser(...args); }
+async function closeFocusEditor(...args) { return (await getChroniclesFeature()).closeFocusEditor(...args); }
+async function closePhotoLightbox(...args) { return (await getChroniclesFeature()).closePhotoLightbox(...args); }
+async function centerFocusEditor(...args) { return (await getChroniclesFeature()).centerFocusEditor(...args); }
+async function endFocusDrag(...args) { return (await getChroniclesFeature()).endFocusDrag(...args); }
+async function handleChronicleReorderKey(...args) { return (await getChroniclesFeature()).handleChronicleReorderKey(...args); }
+async function handleChroniclePhotoClick(...args) { return (await getChroniclesFeature()).handleChroniclePhotoClick(...args); }
+async function handlePhotoFrameKey(...args) { return (await getChroniclesFeature()).handlePhotoFrameKey(...args); }
+async function moveFocusDrag(...args) { return (await getChroniclesFeature()).moveFocusDrag(...args); }
+async function movePhotoLightbox(...args) { return (await getChroniclesFeature()).movePhotoLightbox(...args); }
+async function nudgeFocusEditor(...args) { return (await getChroniclesFeature()).nudgeFocusEditor(...args); }
+async function openFocusEditor(...args) { return (await getChroniclesFeature()).openFocusEditor(...args); }
+async function saveFocusEditor(...args) { return (await getChroniclesFeature()).saveFocusEditor(...args); }
+async function scrollToChronicleYear(...args) { return (await getChroniclesFeature()).scrollToChronicleYear(...args); }
+async function setFocusAxis(...args) { return (await getChroniclesFeature()).setFocusAxis(...args); }
+async function setFocusFromPointer(...args) { return (await getChroniclesFeature()).setFocusFromPointer(...args); }
+async function startChroniclePhotoReorder(...args) { return (await getChroniclesFeature()).startChroniclePhotoReorder(...args); }
+async function startFocusDrag(...args) { return (await getChroniclesFeature()).startFocusDrag(...args); }
 
 async function loadEntries() {
+  await ensureCloudStore();
   const rawList=await getAllEntries(currentCategory);
   const list = pendingDeleteId != null ? rawList.filter(e => String(e.id) !== String(pendingDeleteId)) : rawList;
   const container=document.getElementById('entries');
@@ -208,24 +227,27 @@ async function loadEntries() {
   document.body.classList.toggle('margins-mode', isMargins);
 
   if (currentCategory === 'chronicles') {
+    const { renderChroniclesTimeline } = await getChroniclesFeature();
     renderChroniclesTimeline(list, container, countEl);
     return;
   }
 
   if (isMargins) {
+    const { renderWorkspace: renderMarginsWorkspace } = await getMarginsFeature();
     await renderMarginsWorkspace(list, container, countEl);
     return;
   }
 
+  const works = isVoices ? await loadWorksModule() : null;
   const visibleList = isVoices
     ? list.filter(entry => {
-        const w = workForEntry(entry);
+        const w = works.workForEntry(entry);
         return (currentWorkFilter === 'all' || w.type === currentWorkFilter)
             && (currentChildFilter === 'all' || w.child === currentChildFilter);
       })
     : list;
 
-  if (isVoices) renderWorkFilters(list, currentWorkFilter, currentChildFilter);
+  if (isVoices) works.renderWorkFilters(list, currentWorkFilter, currentChildFilter);
 
   countEl.textContent = visibleList.length>0 ? `· ${visibleList.length} ${visibleList.length===1?'entry':'entries'}` : '';
 
@@ -237,7 +259,8 @@ async function loadEntries() {
     return;
   }
 
-  container.innerHTML = visibleList.map(e=>renderEntry(e, isVoices)).join('');
+  const { renderEntry } = await loadEditorModule();
+  container.innerHTML = visibleList.map(e=>renderEntry(e, isVoices, works?.workForEntry)).join('');
 }
 
 function setWorkFilter(type) {
@@ -252,7 +275,9 @@ async function openEditor(entry=null, defaults={}){
   const isWorksEditor = editorCategory === 'voices';
   const isMarginsEditor = editorCategory === 'margins';
   currentCategory = editorCategory;
-  if (isMarginsEditor) await loadMarginBooks();
+  const margins = isMarginsEditor ? await getMarginsFeature() : null;
+  const works = isWorksEditor ? await loadWorksModule() : null;
+  if (isMarginsEditor) await margins.loadMarginBooks();
   document.getElementById('editorTitle').textContent = isMarginsEditor
     ? (entry ? 'Edit Reading Note' : '留下書邊的字')
     : (entry ? 'Edit Entry' : 'A New Entry');
@@ -260,20 +285,29 @@ async function openEditor(entry=null, defaults={}){
   document.getElementById('fDate').value=entry?.date||defaults.date||new Date().toISOString().slice(0,10);
   document.getElementById('fTitle').value=entry?.title||defaults.title||'';
   document.getElementById('fTitle').placeholder=CATEGORY_PLACEHOLDERS[editorCategory].title;
+  const { setMarkdownPlaceholder, setMarkdownValue } = await loadRichTextModule();
   await setMarkdownPlaceholder('fBody', CATEGORY_PLACEHOLDERS[editorCategory].body);
   await setMarkdownValue('fBody', entry?.body||defaults.body||'', entry?.bodyFormat || defaults.bodyFormat);
   selectedWorkType = isWorksEditor
-    ? workForEntry(entry || { category: 'voices', work: defaults.work || { type: currentWorkFilter !== 'all' ? currentWorkFilter : DEFAULT_WORK_TYPE } }).type
+    ? works.workForEntry(entry || { category: 'voices', work: defaults.work || { type: currentWorkFilter !== 'all' ? currentWorkFilter : DEFAULT_WORK_TYPE } }).type
     : DEFAULT_WORK_TYPE;
   selectedWorkChild = isWorksEditor
-    ? workForEntry(entry || { category: 'voices', work: defaults.work || { child: currentChildFilter !== 'all' ? currentChildFilter : DEFAULT_WORK_CHILD } }).child
+    ? works.workForEntry(entry || { category: 'voices', work: defaults.work || { child: currentChildFilter !== 'all' ? currentChildFilter : DEFAULT_WORK_CHILD } }).child
     : DEFAULT_WORK_CHILD;
   selectedFeaturedImageIndex = isWorksEditor
-    ? (workForEntry(entry || {}).featuredImageIndex ?? DEFAULT_FEATURED_IMAGE_INDEX)
+    ? (works.workForEntry(entry || {}).featuredImageIndex ?? DEFAULT_FEATURED_IMAGE_INDEX)
     : DEFAULT_FEATURED_IMAGE_INDEX;
   renderWorkTypeOptions(isWorksEditor);
   renderWorkChildOptions(isWorksEditor);
-  await renderMarginEditorFields(entry, defaults, isMarginsEditor);
+  if (margins) await margins.renderEditorFields(entry, defaults, isMarginsEditor);
+  else {
+    document.querySelectorAll('.standard-entry-field').forEach(field => {
+      field.style.display = 'block';
+    });
+    const mediaField = document.getElementById('mediaField');
+    if (mediaField) mediaField.style.display = 'block';
+    document.getElementById('marginEditorFields')?.classList.remove('visible');
+  }
 
   draftImages.forEach(i=>URL.revokeObjectURL(i.url));
   draftAudios.forEach(a=>URL.revokeObjectURL(a.url));
@@ -340,7 +374,7 @@ function selectWorkChild(child) {
 
 function setChildFilter(child) {
   currentChildFilter = child === 'all' || WORK_CHILDREN[child] ? child : 'all';
-  renderEntries();
+  loadEntries();
 }
 
 function closeEditor(){
@@ -358,10 +392,12 @@ async function saveEntry(){
   if (isSavingEntry) return;
   const date=document.getElementById('fDate').value;
   const title=document.getElementById('fTitle').value.trim();
+  const { getMarkdownValue, markdownToPlainText } = await loadRichTextModule();
   const body=await getMarkdownValue('fBody');
   const hasImages = draftImages.length > 0;
 
   if (currentCategory === 'margins') {
+    const { buildEditorEntry: buildMarginEditorEntry } = await getMarginsFeature();
     const entry = await buildMarginEditorEntry({ date, editingId });
     if (!entry) return;
     await runEditorSaveState(async () => {
@@ -385,6 +421,7 @@ async function saveEntry(){
     updatedAt:Date.now()
   };
   if (currentCategory === 'chronicles') {
+    const { normalizeChronicleImageMeta } = await getChroniclesFeature();
     const year = Number((entry.date || '').slice(0, 4)) || new Date().getFullYear();
     const gpsLocations = [...new Set(draftImages.map(img => img.gpsLocation).filter(Boolean))];
     entry.chronicle = {
@@ -396,6 +433,7 @@ async function saveEntry(){
     entry.images = draftImages.map(normalizeChronicleImageMeta);
   }
   if (currentCategory === 'voices') {
+    const { normalizeWork } = await loadWorksModule();
     const work = normalizeWork({ type: selectedWorkType, child: selectedWorkChild, featuredImageIndex: selectedFeaturedImageIndex });
     entry.work = work;
   }
@@ -411,6 +449,7 @@ async function saveEntry(){
       };
     }
     if (currentCategory === 'voices') {
+      const { normalizeWork } = await loadWorksModule();
       entry.work = normalizeWork({
         ...(old?.work || {}),
         ...entry.work
@@ -490,15 +529,15 @@ async function addImages(e){
     }
   }
   e.target.value='';
-  renderMediaPreview();
+  await renderMediaPreview();
 }
 
-function addAudioFile(e){
+async function addAudioFile(e){
   Array.from(e.target.files).forEach(f=>{
     draftAudios.push({blob:f,url:URL.createObjectURL(f),name:f.name});
   });
   e.target.value='';
-  renderMediaPreview();
+  await renderMediaPreview();
 }
 
 function removeMedia(type,idx){
@@ -634,7 +673,7 @@ async function saveImageCaptionEditor() {
       size: croppedBlob ? croppedBlob.size : currentImage.size
     };
     closeImageCaptionEditor();
-    renderMediaPreview();
+    await renderMediaPreview();
   } catch (err) {
     console.error(err);
     alert('無法輸出裁切後的圖片，請再試一次或重新上傳圖片。');
@@ -689,9 +728,10 @@ function undoDelete() {
   loadEntries();
 }
 
-function renderMediaPreview(){
+async function renderMediaPreview(){
   const wrap=document.getElementById('mediaPreview');
   const isVoices = currentCategory === 'voices';
+  const { mediaPreviewMarkup } = await loadEditorModule();
   wrap.innerHTML=mediaPreviewMarkup(draftImages, draftAudios, isVoices, selectedFeaturedImageIndex);
 }
 
@@ -745,7 +785,6 @@ async function toggleRecord(){
       if(msg){msg.textContent='儲存初始化失敗，功能受限';}
     }
     await openingAnimationReady;
-    await initCloudStore();
 
     document.getElementById('unlockBtn').addEventListener('click',handleUnlock);
     document.getElementById('continueBtn').addEventListener('click',continueToBook);
