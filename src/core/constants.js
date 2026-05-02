@@ -2,7 +2,8 @@ export const MARLENE_BIRTHDAY = '1985-05-06';
 
 export const WORK_TYPES = {
   drawing: { label: '畫圖作品', icon: 'ph:paint-brush-thin', cls: 'work-drawing' },
-  award: { label: '獎狀 / 獎盃', icon: 'ph:trophy-thin', cls: 'work-award' }
+  award: { label: '獎狀 / 獎盃', icon: 'ph:trophy-thin', cls: 'work-award' },
+  showTell: { label: 'Show & Tell', icon: 'ph:presentation-chart-thin', cls: 'work-show-tell' }
 };
 
 export const DEFAULT_WORK_TYPE = 'drawing';

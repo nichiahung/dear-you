@@ -120,6 +120,12 @@
     mix-blend-mode: multiply;
   }
 
+  @media (prefers-reduced-data: reduce), (max-width: 640px) {
+    body::before {
+      display: none;
+    }
+  }
+
   /* ============================================
      COVER / SETUP / LOCK
   ============================================ */
@@ -1420,6 +1426,8 @@
     box-shadow: var(--shadow-soft);
     transition: box-shadow 0.32s var(--ease-soft), transform 0.32s var(--ease-soft);
     animation: entryFade 0.44s var(--ease-page) backwards;
+    content-visibility: auto;
+    contain-intrinsic-size: 560px;
   }
 
   .entry:nth-child(1) { animation-delay: 0.03s; }
@@ -4318,7 +4326,7 @@
 
   .work-filter-row {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 10px;
   }
 
@@ -4385,6 +4393,8 @@
     position: relative;
     box-shadow: var(--shadow-medium);
     animation: entryFade 0.44s var(--ease-page) backwards;
+    content-visibility: auto;
+    contain-intrinsic-size: 620px;
   }
 
   .voice-card::before {
@@ -4456,6 +4466,25 @@
     font-family: 'Cormorant Garamond', serif;
     font-size: 42px;
     color: rgba(176, 141, 87, 0.18);
+    pointer-events: none;
+  }
+
+  .voice-card.work-show-tell {
+    border-color: rgba(138, 106, 107, 0.5);
+    background:
+      radial-gradient(circle at 88% 14%, rgba(138, 106, 107, 0.12), transparent 28%),
+      linear-gradient(135deg, rgba(250, 245, 238, 0.98), rgba(232, 213, 210, 0.74));
+  }
+
+  .voice-card.work-show-tell::after {
+    content: "Show";
+    position: absolute;
+    right: 22px;
+    bottom: 14px;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 28px;
+    color: rgba(138, 106, 107, 0.16);
     pointer-events: none;
   }
 
@@ -6273,6 +6302,10 @@
     .work-filters {
       grid-template-columns: repeat(2, minmax(0, 1fr));
       margin-top: -10px;
+    }
+    .work-filter-row,
+    .work-child-filter-row {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
     .work-filter-btn {
       min-height: 76px;
