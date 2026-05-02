@@ -94,7 +94,7 @@ function blobExtension(blob) {
   if (type.includes("gif")) return "gif";
   if (type.includes("webp")) return "webp";
   if (type.includes("jpeg") || type.includes("jpg")) return "jpg";
-  if (type.includes("mp4")) return "m4a";
+  if (type.includes("mp4") || type.includes("m4a")) return "m4a";
   if (type.includes("mpeg")) return "mp3";
   if (type.includes("wav")) return "wav";
   if (type.includes("ogg")) return "ogg";
