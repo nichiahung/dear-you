@@ -3,10 +3,9 @@ import { escapeHtml, formatDate } from '../core/dom.js';
 import { mediaUrl } from '../core/media.js';
 import { renderMarkdown } from '../core/richText.js';
 import { isLocalEntryId } from '../services/localStore.js';
-import { workForEntry } from './works.js';
 
-export function renderEntry(e, isVoice=false) {
-  const work = isVoice ? workForEntry(e) : null;
+export function renderEntry(e, isVoice=false, getWorkForEntry=null) {
+  const work = isVoice && getWorkForEntry ? getWorkForEntry(e) : null;
   const workType = work ? WORK_TYPES[work.type] : null;
   const images=(e.images||[]).map((b, idx)=>{
     const url=mediaUrl(b);
@@ -43,7 +42,7 @@ export function renderEntry(e, isVoice=false) {
           <button onclick="confirmDelete('${entryId}')"><span class="iconify" data-icon="ph:trash-thin"></span>remove</button>
         </span>
       </div>
-      ${isVoice ? `<div class="work-type-tag"><span class="iconify" data-icon="${workType.icon}"></span>${work.label}</div>` : ''}
+      ${isVoice && workType ? `<div class="work-type-tag"><span class="iconify" data-icon="${workType.icon}"></span>${work.label}</div>` : ''}
       ${e.title?`<h3 class="entry-title">${escapeHtml(e.title)}</h3>`:''}
       ${e.body?renderMarkdown(e.body, e.bodyFormat, 'entry-body markdown-content'):''}
       ${images?`<div class="entry-media">${images}</div>`:''}

@@ -14,6 +14,7 @@ import {
 
 export function createEntryRepository() {
   let cloudAvailable = false;
+  let cloudBridgePromise = null;
 
   function setCloudStatus(text, error=false) {
     const el = document.getElementById('cloudStatus');
@@ -51,6 +52,21 @@ export function createEntryRepository() {
       window.addEventListener('dearYouCloudReady', handleReady, { once: true });
       window.addEventListener('dearYouCloudUnavailable', handleUnavailable, { once: true });
     });
+  }
+
+  async function loadCloudBridge() {
+    if (window.dearYouCloud) return window.dearYouCloud;
+    if (window.dearYouCloudError) throw window.dearYouCloudError;
+
+    if (!cloudBridgePromise) {
+      cloudBridgePromise = import('./firebaseCloud.js').catch((err) => {
+        if (!window.dearYouCloudError) window.dearYouCloudError = err;
+        throw err;
+      });
+    }
+
+    await cloudBridgePromise;
+    return waitForCloudBridge();
   }
 
   async function migrateLocalDataToCloud() {
@@ -93,7 +109,7 @@ export function createEntryRepository() {
 
   async function initCloudStore() {
     try {
-      const cloud = await waitForCloudBridge();
+      const cloud = await loadCloudBridge();
       await cloud.ready;
       cloudAvailable = true;
       setCloudStatus('synced to cloud');
