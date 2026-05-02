@@ -24,19 +24,32 @@ export function createEntryRepository() {
 
   function waitForCloudBridge() {
     if (window.dearYouCloud) return Promise.resolve(window.dearYouCloud);
+    if (window.dearYouCloudError) return Promise.reject(window.dearYouCloudError);
 
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
-        window.removeEventListener('dearYouCloudReady', handleReady);
+        cleanup();
         reject(new Error('Firebase module did not initialize in time'));
       }, 10000);
 
-      function handleReady() {
+      function cleanup() {
         clearTimeout(timer);
+        window.removeEventListener('dearYouCloudReady', handleReady);
+        window.removeEventListener('dearYouCloudUnavailable', handleUnavailable);
+      }
+
+      function handleReady() {
+        cleanup();
         resolve(window.dearYouCloud);
       }
 
+      function handleUnavailable(event) {
+        cleanup();
+        reject(event.detail || window.dearYouCloudError || new Error('Firebase module unavailable'));
+      }
+
       window.addEventListener('dearYouCloudReady', handleReady, { once: true });
+      window.addEventListener('dearYouCloudUnavailable', handleUnavailable, { once: true });
     });
   }
 

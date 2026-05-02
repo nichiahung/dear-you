@@ -60,11 +60,21 @@ docs/ROADMAP.md  -> 後續功能、技術債、AI agent 維護注意事項
 
 ## Deploy
 
+### Local Firebase web config
+
+Firebase Web `apiKey` is public browser config, but it must not be committed as a literal value. For local development:
+
+```bash
+cp .env.example .env.local
+# Fill VITE_FIREBASE_API_KEY in .env.local
+npm run dev
+```
+
 ### Auto-deploy (recommended)
 
 Pushes to `main` that touch `index.html`, `firebase.json`, or `.firebaserc` automatically deploy Hosting via GitHub Actions (`.github/workflows/deploy.yml`).
 
-One-time setup — add repo secret `FIREBASE_SERVICE_ACCOUNT_DEARYOU_BFFFC` containing a Firebase service-account JSON key with the `Firebase Hosting Admin` role. See [docs/FIREBASE.md](docs/FIREBASE.md) for the exact steps.
+One-time setup — add repo secret `FIREBASE_SERVICE_ACCOUNT_DEARYOU_BFFFC` containing a Firebase service-account JSON key with the `Firebase Hosting Admin` role. Also add repo secret `FIREBASE_WEB_API_KEY` containing the restricted Firebase Web API key used at build time. See [docs/FIREBASE.md](docs/FIREBASE.md) for the exact steps.
 
 ### Manual deploy
 

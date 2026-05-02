@@ -43,6 +43,22 @@ src/services/entryRepository.js  -> cloud/local read-write facade
 src/services/localStore.js       -> IndexedDB fallback
 ```
 
+Firebase Web `apiKey` 由 Vite env 注入，避免把 key literal commit 進 repo：
+
+```bash
+cp .env.example .env.local
+# Fill VITE_FIREBASE_API_KEY in .env.local
+npm run dev
+```
+
+GitHub Actions deploy 需要 repo secret：
+
+```text
+FIREBASE_WEB_API_KEY
+```
+
+這個 key 仍會出現在瀏覽器 bundle 中；它不是密碼。安全重點是 Google Cloud API key restrictions、Firebase Auth、Firestore/Storage Rules 與 App Check。
+
 ## Cloud Functions
 
 `functions/index.js` 提供書本搜尋 proxy：
@@ -357,4 +373,4 @@ Google Photos / Google URL 討論：
 - `/api/searchBooks` rewrite 需用 Firebase Hosting emulator 或部署環境驗證；不要用 Vite dev server 的 `/api/searchBooks` 結果判斷。
 - 修改資料模型時同步更新 rules、前端 render/save 邏輯與本文件。
 - 新增 media provider 時保留 `source` 欄位，避免混淆 Storage URL、external URL、local Blob。
-- Firebase API key 是 public config，不是 secret；不要把它當作敏感密碼處理。
+- Firebase API key 是 public config，不是後端 secret；不要 commit literal，並在 Google Cloud Console 限制允許的 referrer 與 API。
