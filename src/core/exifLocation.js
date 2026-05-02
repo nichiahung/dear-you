@@ -6,6 +6,10 @@ async function getExifr() {
 
 const geocodeCache = new Map();
 
+function formatCoordinates(latitude, longitude) {
+  return `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+}
+
 async function reverseGeocode(latitude, longitude) {
   const key = `${Math.round(latitude * 10)},${Math.round(longitude * 10)}`;
   if (geocodeCache.has(key)) return geocodeCache.get(key);
@@ -35,7 +39,7 @@ export async function extractLocationFromImage(file) {
     const exifr = await getExifr();
     const gps = await exifr.gps(file);
     if (!gps?.latitude || !gps?.longitude) return null;
-    return reverseGeocode(gps.latitude, gps.longitude);
+    return await reverseGeocode(gps.latitude, gps.longitude) || formatCoordinates(gps.latitude, gps.longitude);
   } catch {
     return null;
   }
