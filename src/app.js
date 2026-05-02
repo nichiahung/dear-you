@@ -58,6 +58,9 @@ let mediaRecorder=null;
 let recordChunks=[];
 let selectedWorkType='drawing';
 let selectedWorkChild='kris';
+let selectedFeaturedImageIndex=DEFAULT_FEATURED_IMAGE_INDEX;
+let pendingDeleteId=null;
+let pendingDeleteTimer=null;
 let currentWorkFilter='all';
 let currentChildFilter='all';
 let isSavingEntry=false;
@@ -142,9 +145,8 @@ const editorActions = createEditorActions({
   getEntry,
   loadEntries: () => loadEntries(),
   openEditor: (entry, defaults) => openEditor(entry, defaults),
-  setCurrentCategory: (category) => {
-    currentCategory = category;
-  }
+  setCurrentCategory: (category) => { currentCategory = category; },
+  softDeleteEntry: (id) => softDeleteEntry(id)
 });
 
 const {
@@ -194,7 +196,8 @@ const {
 } = margins;
 
 async function loadEntries() {
-  const list=await getAllEntries(currentCategory);
+  const rawList=await getAllEntries(currentCategory);
+  const list = pendingDeleteId != null ? rawList.filter(e => String(e.id) !== String(pendingDeleteId)) : rawList;
   const container=document.getElementById('entries');
   const countEl=document.getElementById('sectionCount');
   const isVoices = currentCategory === 'voices';
@@ -265,6 +268,9 @@ async function openEditor(entry=null, defaults={}){
   selectedWorkChild = isWorksEditor
     ? workForEntry(entry || { category: 'voices', work: defaults.work || { child: currentChildFilter !== 'all' ? currentChildFilter : DEFAULT_WORK_CHILD } }).child
     : DEFAULT_WORK_CHILD;
+  selectedFeaturedImageIndex = isWorksEditor
+    ? (workForEntry(entry || {}).featuredImageIndex ?? DEFAULT_FEATURED_IMAGE_INDEX)
+    : DEFAULT_FEATURED_IMAGE_INDEX;
   renderWorkTypeOptions(isWorksEditor);
   renderWorkChildOptions(isWorksEditor);
   await renderMarginEditorFields(entry, defaults, isMarginsEditor);
@@ -390,7 +396,7 @@ async function saveEntry(){
     entry.images = draftImages.map(normalizeChronicleImageMeta);
   }
   if (currentCategory === 'voices') {
-    const work = normalizeWork({ type: selectedWorkType, child: selectedWorkChild, featuredImageIndex: DEFAULT_FEATURED_IMAGE_INDEX });
+    const work = normalizeWork({ type: selectedWorkType, child: selectedWorkChild, featuredImageIndex: selectedFeaturedImageIndex });
     entry.work = work;
   }
   if(editingId){
@@ -501,6 +507,8 @@ function removeMedia(type,idx){
     if(draftImages[idx].blob&&draftImages[idx].url)URL.revokeObjectURL(draftImages[idx].url);
     draftImages.splice(idx,1);
     if (imageCaptionEditorIndex !== null && imageCaptionEditorIndex > idx) imageCaptionEditorIndex -= 1;
+    if (selectedFeaturedImageIndex === idx) selectedFeaturedImageIndex = 0;
+    else if (selectedFeaturedImageIndex > idx) selectedFeaturedImageIndex -= 1;
   }
   else{
     if(draftAudios[idx].blob&&draftAudios[idx].url)URL.revokeObjectURL(draftAudios[idx].url);
@@ -522,6 +530,13 @@ function reorderDraftImages(fromIndex, toIndex) {
   if (toIndex < 0 || toIndex >= draftImages.length) return false;
   const [image] = draftImages.splice(fromIndex, 1);
   draftImages.splice(toIndex, 0, image);
+  if (selectedFeaturedImageIndex === fromIndex) {
+    selectedFeaturedImageIndex = toIndex;
+  } else if (fromIndex < selectedFeaturedImageIndex && toIndex >= selectedFeaturedImageIndex) {
+    selectedFeaturedImageIndex -= 1;
+  } else if (fromIndex > selectedFeaturedImageIndex && toIndex <= selectedFeaturedImageIndex) {
+    selectedFeaturedImageIndex += 1;
+  }
   renderMediaPreview();
   return true;
 }
@@ -644,9 +659,45 @@ function announceReorder(message) {
   });
 }
 
+async function softDeleteEntry(id) {
+  if (pendingDeleteTimer) {
+    clearTimeout(pendingDeleteTimer);
+    await deleteEntryFromDB(pendingDeleteId);
+  }
+  const entry = await getEntry(id);
+  pendingDeleteId = id;
+  const label = entry?.title ? `「${entry.title}」` : '這一篇';
+  const toast = document.getElementById('undoToast');
+  const msg = document.getElementById('undoToastMsg');
+  if (toast && msg) { msg.textContent = `已移除 ${label}`; toast.hidden = false; }
+  pendingDeleteTimer = setTimeout(async () => {
+    await deleteEntryFromDB(pendingDeleteId);
+    pendingDeleteId = null;
+    pendingDeleteTimer = null;
+    if (toast) toast.hidden = true;
+  }, 5000);
+  loadEntries();
+}
+
+function undoDelete() {
+  if (pendingDeleteId == null) return;
+  clearTimeout(pendingDeleteTimer);
+  pendingDeleteId = null;
+  pendingDeleteTimer = null;
+  const toast = document.getElementById('undoToast');
+  if (toast) toast.hidden = true;
+  loadEntries();
+}
+
 function renderMediaPreview(){
   const wrap=document.getElementById('mediaPreview');
-  wrap.innerHTML=mediaPreviewMarkup(draftImages, draftAudios);
+  const isVoices = currentCategory === 'voices';
+  wrap.innerHTML=mediaPreviewMarkup(draftImages, draftAudios, isVoices, selectedFeaturedImageIndex);
+}
+
+function selectFeaturedImage(idx) {
+  selectedFeaturedImageIndex = idx;
+  renderMediaPreview();
 }
 
 async function toggleRecord(){
@@ -902,7 +953,9 @@ Object.assign(window, {
   selectMarginAuthor,
   selectMarginBook,
   selectMarginEditorAuthor,
+  selectFeaturedImage,
   selectWorkChild,
+  undoDelete,
   selectWorkType,
   setChildFilter,
   setWorkFilter,
