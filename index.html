@@ -15,7 +15,8 @@
 <script type="module" src="/src/services/firebaseCloud.js"></script>
 <script type="module" src="/src/app.js"></script>
 </head>
-<body>
+<body class="app-booting">
+<div class="sr-only" id="reorderLive" aria-live="polite" aria-atomic="true"></div>
 
 <button class="birthday-magic-toggle" id="birthdayMagicToggle" type="button" role="switch" aria-checked="false" title="切換花瓣動畫" hidden>
   <span class="birthday-toggle-label">Petal rain</span>
@@ -194,6 +195,16 @@
   </div>
 </div>
 
+<!-- CHRONICLE PHOTO BROWSER -->
+<div class="chronicle-photo-browser" id="chroniclePhotoBrowser" aria-hidden="true">
+  <div class="chronicle-photo-browser-card" role="dialog" aria-modal="true" aria-labelledby="chroniclePhotoBrowserTitle">
+    <button class="chronicle-photo-browser-close" id="chroniclePhotoBrowserClose" type="button" aria-label="Close photo browser">×</button>
+    <div class="chronicle-photo-browser-title" id="chroniclePhotoBrowserTitle">全部照片</div>
+    <div class="chronicle-photo-browser-subtitle">拖曳照片調整編年史順序。</div>
+    <div class="chronicle-photo-browser-grid" id="chroniclePhotoBrowserGrid"></div>
+  </div>
+</div>
+
 <!-- FOCUS EDITOR -->
 <div class="focus-editor" id="focusEditor" aria-hidden="true">
   <div class="focus-editor-card" role="dialog" aria-modal="true" aria-labelledby="focusEditorTitle">
@@ -242,6 +253,11 @@
   <div class="modal-card">
     <div class="modal-title" id="editorTitle">A New Entry</div>
     <div class="modal-subtitle" id="editorSubtitle">Chapter I · Letters</div>
+    <div class="editor-save-state" id="editorSaveState" aria-live="polite" aria-hidden="true">
+      <div class="editor-save-mark" aria-hidden="true"></div>
+      <div class="editor-save-title" id="editorSaveTitle">Saving memories</div>
+      <div class="editor-save-copy" id="editorSaveCopy">正在保存圖片與文字</div>
+    </div>
 
     <div class="field">
       <label>Date · 日期</label>
@@ -253,26 +269,23 @@
     </div>
     <div class="field standard-entry-field">
       <label>Story · 內容</label>
-      <textarea id="fBody" placeholder=""></textarea>
+      <div id="fBody" data-markdown-editor></div>
     </div>
     <div class="margin-editor-fields" id="marginEditorFields">
       <div class="field">
         <label>Book · 關聯書本</label>
         <select id="marginEditorBook"></select>
       </div>
-      <div class="margin-editor-grid">
-        <div class="field">
-          <label>Quote · 我讀到的句子</label>
-          <textarea id="marginEditorQuote" placeholder="把那句停下來想起對方的文字放在這裡"></textarea>
-        </div>
-        <div class="field">
-          <label>Page · 頁碼</label>
-          <input type="text" id="marginEditorPage" placeholder="p. 42">
-        </div>
+      <div class="field">
+        <label>Quotes · 我讀到的句子</label>
+        <div class="margin-quote-list" id="marginEditorQuoteList"></div>
+        <button class="margin-quote-add" type="button" onclick="addMarginQuote('marginEditor')">
+          <span class="iconify" data-icon="ph:plus-thin"></span>新增 quote
+        </button>
       </div>
       <div class="field">
         <label>Reflection · 心得</label>
-        <textarea class="margin-reflection-input" id="marginEditorBody" placeholder="關於這本書，我想留下..."></textarea>
+        <div class="margin-reflection-input" id="marginEditorBody" data-markdown-editor data-placeholder="關於這本書，我想留下..."></div>
       </div>
       <div class="margin-editor-footer">
         <div class="margin-editor-author-toggle" id="marginEditorAuthors" aria-label="留言者"></div>
@@ -297,6 +310,31 @@
     <div class="modal-actions">
       <button class="btn-secondary" id="cancelBtn">Cancel</button>
       <button class="btn-primary" id="saveBtn">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- IMAGE CAPTION EDITOR -->
+<div class="image-caption-editor" id="imageCaptionEditor" aria-hidden="true">
+  <div class="image-caption-editor-card" role="dialog" aria-modal="true" aria-labelledby="imageCaptionEditorTitle">
+    <button class="image-caption-editor-close" id="imageCaptionEditorClose" type="button" aria-label="Close image caption editor">×</button>
+    <div class="image-caption-editor-title" id="imageCaptionEditorTitle">照片描述</div>
+    <div class="image-caption-cropper-shell">
+      <div class="image-caption-cropper" id="imageCaptionCropper" tabindex="-1"></div>
+      <div class="image-caption-cropper-footer">
+        <span id="imageCaptionEditorCount"></span>
+        <div class="image-caption-cropper-tools" aria-label="圖片裁切控制">
+          <button type="button" data-caption-crop-action="zoom-out" aria-label="縮小圖片"><span class="iconify" data-icon="ph:magnifying-glass-minus-thin"></span></button>
+          <button type="button" data-caption-crop-action="reset" aria-label="重設裁切"><span class="iconify" data-icon="ph:arrow-counter-clockwise-thin"></span></button>
+          <button type="button" data-caption-crop-action="zoom-in" aria-label="放大圖片"><span class="iconify" data-icon="ph:magnifying-glass-plus-thin"></span></button>
+        </div>
+      </div>
+    </div>
+    <label class="image-caption-editor-label" for="imageCaptionEditorText">這張照片的描述</label>
+    <textarea class="image-caption-editor-text" id="imageCaptionEditorText" rows="7" placeholder="寫下這張照片想留下的話"></textarea>
+    <div class="image-caption-editor-actions">
+      <button type="button" id="imageCaptionEditorCancel">取消</button>
+      <button type="button" class="primary" id="imageCaptionEditorSave">完成</button>
     </div>
   </div>
 </div>

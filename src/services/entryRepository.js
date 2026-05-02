@@ -76,6 +76,7 @@ export function createEntryRepository() {
           date: entry.date || new Date().toISOString().slice(0,10),
           title: entry.title || '',
           body: entry.body || '',
+          bodyFormat: entry.bodyFormat || '',
           images: (entry.images || []).map(asDraftMedia),
           audios: (entry.audios || []).map(asDraftMedia),
           margin: entry.margin || null,

@@ -1,6 +1,7 @@
 import { WORK_TYPES } from '../core/constants.js';
 import { escapeHtml, formatDate } from '../core/dom.js';
 import { mediaUrl } from '../core/media.js';
+import { renderMarkdown } from '../core/richText.js';
 import { isLocalEntryId } from '../services/localStore.js';
 import { workForEntry } from './works.js';
 
@@ -44,7 +45,7 @@ export function renderEntry(e, isVoice=false) {
       </div>
       ${isVoice ? `<div class="work-type-tag"><span class="iconify" data-icon="${workType.icon}"></span>${work.label}</div>` : ''}
       ${e.title?`<h3 class="entry-title">${escapeHtml(e.title)}</h3>`:''}
-      ${e.body?`<div class="entry-body">${escapeHtml(e.body)}</div>`:''}
+      ${e.body?renderMarkdown(e.body, e.bodyFormat, 'entry-body markdown-content'):''}
       ${images?`<div class="entry-media">${images}</div>`:''}
       ${audios||''}
     </article>
@@ -52,12 +53,24 @@ export function renderEntry(e, isVoice=false) {
 }
 
 export function mediaPreviewMarkup(draftImages, draftAudios) {
-  const imgs=draftImages.map((i,idx)=>`
-    <div class="media-chip">
-      <img src="${i.url}" alt="">
-      <textarea class="media-caption-input" rows="2" placeholder="這張照片的描述" oninput="updateImageCaption(${idx}, this.value)">${escapeHtml(i.caption || '')}</textarea>
+  const imgs=draftImages.map((i,idx)=>{
+    const caption = (i.caption || '').trim();
+    return `
+    <div class="media-chip media-chip-image" tabindex="0" data-reorder-index="${idx}" onpointerdown="startImageReorder(event, ${idx})" onkeydown="handleImageReorderKey(event, ${idx})">
+      <span class="media-drag-handle" aria-hidden="true"><span class="iconify" data-icon="ph:dots-three-vertical-thin"></span></span>
+      <img src="${i.url}" alt="" draggable="false">
+      <div class="media-order-controls" aria-label="調整圖片順序">
+        <button type="button" class="media-order-btn" onclick="moveMedia('image',${idx},-1)" ${idx === 0 ? 'disabled' : ''} aria-label="往前移一張" title="往前移一張"><span class="iconify" data-icon="ph:arrow-left-thin"></span></button>
+        <span class="media-order-label">${idx + 1}</span>
+        <button type="button" class="media-order-btn" onclick="moveMedia('image',${idx},1)" ${idx === draftImages.length - 1 ? 'disabled' : ''} aria-label="往後移一張" title="往後移一張"><span class="iconify" data-icon="ph:arrow-right-thin"></span></button>
+      </div>
+      <button type="button" class="media-caption-btn" onclick="openImageCaptionEditor(${idx})">
+        <span class="iconify" data-icon="ph:pencil-simple-thin"></span>${caption ? '編輯描述' : '加入描述'}
+      </button>
+      <div class="media-caption-summary ${caption ? '' : 'empty'}" title="${escapeHtml(caption)}">${caption ? escapeHtml(caption) : '尚未描述'}</div>
       <button class="remove" onclick="removeMedia('image',${idx})">×</button>
-    </div>`).join('');
+    </div>`;
+  }).join('');
   const auds=draftAudios.map((a,idx)=>`
     <div class="media-chip">
       <audio controls src="${a.url}"></audio>

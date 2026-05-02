@@ -1,14 +1,63 @@
 import { CHRONICLES_START_YEAR } from '../core/constants.js';
 import { escapeHtml, formatDate } from '../core/dom.js';
 import { clampFocusValue, clampZoomValue, mediaUrl } from '../core/media.js';
+import { createPointerReorder } from '../core/pointerReorder.js';
+import { renderMarkdown } from '../core/richText.js';
+
+let sortableModulePromise = null;
+
+function loadSortable() {
+  if (!sortableModulePromise) sortableModulePromise = import('sortablejs');
+  return sortableModulePromise;
+}
 
 export function createChroniclesFeature({ getEntry, saveEntryToDB, loadEntries }) {
   let chronicleLightboxSets = {};
+  let chronicleReorderSets = {};
   let currentLightboxSetId = null;
   let currentLightboxIndex = 0;
+  let currentPhotoBrowserSetId = null;
   let focusEditorState = null;
   let focusPointerActive = false;
   let focusPointerLast = null;
+  let chronicleYearObserver = null;
+  let chronicleReorderSaving = false;
+  let suppressChroniclePhotoClick = false;
+  let photoBrowserSortable = null;
+
+  const chroniclePointerReorder = createPointerReorder({
+    itemSelector: '.chronicle-photo-frame[data-reorder-index], .chronicle-photo-browser-item[data-reorder-index]',
+    getItems: (context) => {
+      if (context?.surface === 'browser') {
+        return document.querySelectorAll('#chroniclePhotoBrowserGrid .chronicle-photo-browser-item[data-reorder-index]');
+      }
+      return document.querySelectorAll(`[data-chronicle-set="${context?.setId}"][data-reorder-index]`);
+    },
+    getGhostRect: ({ x, y, context }) => {
+      const size = context?.surface === 'timeline'
+        ? Math.min(160, Math.max(124, window.innerWidth - 32))
+        : Math.min(180, Math.max(124, window.innerWidth - 32));
+      return {
+        width: size,
+        height: size,
+        left: Math.max(12, Math.min(window.innerWidth - size - 12, x - size / 2)),
+        top: Math.max(12, Math.min(window.innerHeight - size - 12, y - size / 2)),
+        grabX: size / 2,
+        grabY: size / 2
+      };
+    },
+    canReorder: (fromIndex, toIndex, context) => canReorderChroniclePhotos(context?.setId, fromIndex, toIndex),
+    onReorder: (fromIndex, toIndex, context) => reorderChroniclePhotos(context?.setId, fromIndex, context?.setId, toIndex),
+    onDragStart: () => {
+      suppressChroniclePhotoClick = true;
+    },
+    onDragEnd: () => {
+      setTimeout(() => {
+        suppressChroniclePhotoClick = false;
+      }, 120);
+    },
+    onAnnounce: announceReorder
+  });
 
 function entryYear(entry) {
   if (entry.chronicle?.year) return Number(entry.chronicle.year);
@@ -32,6 +81,7 @@ function renderChroniclesTimeline(list, container, countEl) {
   const currentYear = new Date().getFullYear();
   const years = [];
   chronicleLightboxSets={};
+  chronicleReorderSets={};
   for (let year = CHRONICLES_START_YEAR; year <= currentYear; year++) years.push(year);
 
   const byYear = new Map(years.map(year => [year, []]));
@@ -42,19 +92,20 @@ function renderChroniclesTimeline(list, container, countEl) {
   });
 
   const filledYears = years.filter(year => byYear.get(year).length > 0).length;
-  countEl.textContent = `· ${filledYears}/${years.length} years`;
+  countEl.textContent = `${filledYears}/${years.length} years`;
 
   container.innerHTML = `
     ${renderChronicleYearNav(years, byYear)}
     ${renderChronicleTimeline(years, byYear)}
   `;
+  requestAnimationFrame(() => setupChronicleYearNavState(years));
 }
 
 function renderChronicleYearNav(years, byYear) {
   return `
-    <div class="chronicle-year-nav" aria-label="Chronicle years">
+    <div class="chronicle-year-nav" aria-label="Chronicle years" style="--chronicle-year-count: ${years.length};">
       ${years.map(year => `
-        <button class="${byYear.get(year).length ? 'has-memory' : ''}" onclick="scrollToChronicleYear(${year})">${year}</button>
+        <button class="${byYear.get(year).length ? 'has-memory' : ''}" data-chronicle-year="${year}" onclick="scrollToChronicleYear(${year})">${year}</button>
       `).join('')}
     </div>
   `;
@@ -100,23 +151,34 @@ function chronicleImagesForEntry(entry) {
   });
 }
 
+function normalizeCropConfig(crop = {}, fallback = {}) {
+  return {
+    focalX: Number.isFinite(crop?.focalX) ? clampFocusValue(crop.focalX) : (Number.isFinite(fallback?.focalX) ? clampFocusValue(fallback.focalX) : 50),
+    focalY: Number.isFinite(crop?.focalY) ? clampFocusValue(crop.focalY) : (Number.isFinite(fallback?.focalY) ? clampFocusValue(fallback.focalY) : 38),
+    zoom: Number.isFinite(crop?.zoom) ? clampZoomValue(crop.zoom) : (Number.isFinite(fallback?.zoom) ? clampZoomValue(fallback.zoom) : 1),
+    fit: crop?.fit || fallback?.fit || 'cover'
+  };
+}
+
 function chronicleImageStyle(item) {
-  const focalX = Number.isFinite(item?.focalX) ? Math.max(0, Math.min(100, item.focalX)) : 50;
-  const focalY = Number.isFinite(item?.focalY) ? Math.max(0, Math.min(100, item.focalY)) : 38;
-  const fit = item?.fit === 'contain' ? 'contain' : 'cover';
-  const zoom = Number.isFinite(item?.zoom) ? Math.max(1, Math.min(1.6, item.zoom)) : 1;
+  const crop = normalizeCropConfig(item);
+  const focalX = crop.focalX;
+  const focalY = crop.focalY;
+  const fit = crop.fit === 'contain' ? 'contain' : 'cover';
+  const zoom = crop.zoom;
   return `--focus-x:${focalX}%;--focus-y:${focalY}%;--thumb-fit:${fit};--thumb-zoom:${zoom};`;
 }
 
 function normalizeChronicleImageMeta(image, index) {
+  const baseCrop = normalizeCropConfig(image);
   return {
     ...image,
-    role: index === 0 ? 'cover' : (image.role || 'supporting'),
+    role: index === 0 ? 'cover' : 'supporting',
     order: index,
-    focalX: Number.isFinite(image.focalX) ? image.focalX : 50,
-    focalY: Number.isFinite(image.focalY) ? image.focalY : 38,
-    zoom: Number.isFinite(image.zoom) ? image.zoom : 1,
-    fit: image.fit || 'cover'
+    focalX: baseCrop.focalX,
+    focalY: baseCrop.focalY,
+    zoom: baseCrop.zoom,
+    fit: baseCrop.fit
   };
 }
 
@@ -139,6 +201,7 @@ function renderChronicleAlbum(year, entries) {
       alt: record.item?.caption || title || `Chronicle photo ${index + 1}`
     }))
     .filter(item => item.url);
+  chronicleReorderSets[lightboxSetId] = allImages;
 
   return `
     <article class="chronicle-memory">
@@ -148,7 +211,7 @@ function renderChronicleAlbum(year, entries) {
           <span class="chronicle-memory-date">${escapeHtml(dateStr)}</span>
           <h3 class="chronicle-memory-title">${escapeHtml(title)}</h3>
           ${body
-            ? `<div class="entry-body">${escapeHtml(body)}</div>`
+            ? renderMarkdown(body, primary.bodyFormat, 'entry-body markdown-content')
             : `<div class="chronicle-text-placeholder">這一年還等著被寫下來。</div>`}
         </div>
         <div class="chronicle-card-footer">
@@ -168,30 +231,48 @@ function renderChroniclePhotoCluster(images, hiddenCount, title, lightboxSetId) 
     return '<div class="chronicle-photo-placeholder">photo waits here</div>';
   }
 
-  const photos = images.map((record, index) => {
+  const renderPhoto = (record, index) => {
     const item = record.item;
     const url = mediaUrl(item);
     if (!url) return '';
     const alt = escapeHtml(item?.caption || title || `Chronicle photo ${index + 1}`);
     const cls = index === 0 ? 'main' : 'supporting';
-    const more = hiddenCount > 0 && index === images.length - 1
+    const isMoreTrigger = hiddenCount > 0 && index === images.length - 1;
+    const more = isMoreTrigger
       ? `<span class="chronicle-more-photos">+${hiddenCount}</span>`
       : '';
     const caption = item?.caption
       ? `<figcaption class="chronicle-photo-caption">${escapeHtml(item.caption)}</figcaption>`
       : '';
+    if (isMoreTrigger) {
+      return `
+        <figure class="chronicle-photo-frame ${cls} has-more" role="button" tabindex="0" onclick="handleChroniclePhotoClick(event, '${lightboxSetId}', ${index})" onkeydown="handlePhotoFrameKey(event, '${lightboxSetId}', ${index})">
+          <img src="${url}" loading="lazy" alt="${alt}" draggable="false" style="${chronicleImageStyle(item)}">
+          ${more}
+          ${caption}
+        </figure>`;
+    }
     return `
-      <figure class="chronicle-photo-frame ${cls}" role="button" tabindex="0" onclick="handleChroniclePhotoClick(event, '${lightboxSetId}', ${index})" onkeydown="handlePhotoFrameKey(event, '${lightboxSetId}', ${index})">
-        <img src="${url}" loading="lazy" alt="${alt}" style="${chronicleImageStyle(item)}">
+      <figure class="chronicle-photo-frame ${cls}" role="button" tabindex="0" data-chronicle-set="${lightboxSetId}" data-reorder-index="${index}" onpointerdown="startChroniclePhotoReorder(event, '${lightboxSetId}', ${index})" onclick="handleChroniclePhotoClick(event, '${lightboxSetId}', ${index})" onkeydown="handleChronicleReorderKey(event, '${lightboxSetId}', ${index}); handlePhotoFrameKey(event, '${lightboxSetId}', ${index})">
+        <span class="chronicle-drag-handle" aria-hidden="true"><span class="iconify" data-icon="ph:dots-three-vertical-thin"></span></span>
+        <img src="${url}" loading="lazy" alt="${alt}" draggable="false" style="${chronicleImageStyle(item)}">
         ${more}
         ${caption}
         <button class="chronicle-focus-btn" type="button" onclick="event.stopPropagation(); openFocusEditor('${record.entryId}', ${record.imageIndex})">取景</button>
       </figure>`;
-  }).join('');
+  };
+
+  const mainPhoto = renderPhoto(images[0], 0);
+  const supportingPhotos = images.slice(1).map((record, index) => renderPhoto(record, index + 1)).join('');
+  const hasSupportingRail = images.length > 1;
+  const rail = hasSupportingRail
+    ? `<div class="chronicle-photo-rail rail-count-${images.length - 1}">${supportingPhotos}</div>`
+    : supportingPhotos;
 
   return `
-    <div class="chronicle-photo-strip ${images.length > 1 ? 'has-multiple' : ''} photo-count-${images.length}">
-      ${photos}
+    <div class="chronicle-photo-strip ${images.length > 1 ? 'has-multiple' : ''} ${hasSupportingRail ? 'has-rail' : ''} photo-count-${images.length}">
+      ${mainPhoto}
+      ${rail}
     </div>
   `;
 }
@@ -213,7 +294,76 @@ function renderEmptyChronicleYear(year) {
 }
 
 function scrollToChronicleYear(year) {
+  setCurrentChronicleYear(year, { scrollNav: true });
   document.getElementById(`chronicle-year-${year}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function setCurrentChronicleYear(year, { scrollNav = false } = {}) {
+  const nav = document.querySelector('.chronicle-year-nav');
+  if (!nav) return;
+  const targetYear = String(year);
+  nav.querySelectorAll('button[data-chronicle-year]').forEach(button => {
+    const isCurrent = button.dataset.chronicleYear === targetYear;
+    button.classList.toggle('is-current', isCurrent);
+    if (isCurrent) {
+      button.setAttribute('aria-current', 'true');
+      if (scrollNav) button.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    } else {
+      button.removeAttribute('aria-current');
+    }
+  });
+}
+
+function setupChronicleYearNavState(years) {
+  chronicleYearObserver?.disconnect();
+  const nav = document.querySelector('.chronicle-year-nav');
+  if (nav) {
+    nav.scrollLeft = 0;
+    nav.addEventListener('wheel', handleChronicleYearNavWheel, { passive: false });
+    requestAnimationFrame(() => {
+      nav.scrollLeft = 0;
+    });
+  }
+  setCurrentChronicleYear(years[0]);
+
+  if (!('IntersectionObserver' in window)) return;
+  const visibleYears = new Map();
+  chronicleYearObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      const year = entry.target.id.replace('chronicle-year-', '');
+      if (entry.isIntersecting) {
+        visibleYears.set(year, Math.abs(entry.boundingClientRect.top - 120));
+      } else {
+        visibleYears.delete(year);
+      }
+    });
+    if (!visibleYears.size) return;
+    const [year] = [...visibleYears.entries()].sort((a, b) => a[1] - b[1])[0];
+    setCurrentChronicleYear(year);
+  }, {
+    rootMargin: '-18% 0px -62% 0px',
+    threshold: [0, 0.18, 0.38]
+  });
+
+  years.forEach(year => {
+    const section = document.getElementById(`chronicle-year-${year}`);
+    if (section) chronicleYearObserver.observe(section);
+  });
+}
+
+function handleChronicleYearNavWheel(event) {
+  const nav = event.currentTarget;
+  if (!nav || nav.scrollWidth <= nav.clientWidth) return;
+
+  const delta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
+  if (!delta) return;
+
+  const maxScroll = nav.scrollWidth - nav.clientWidth;
+  const nextScroll = Math.max(0, Math.min(maxScroll, nav.scrollLeft + delta));
+  if (nextScroll === nav.scrollLeft) return;
+
+  event.preventDefault();
+  nav.scrollLeft = nextScroll;
 }
 
 function revealChroniclePhotoTools(frame) {
@@ -223,7 +373,101 @@ function revealChroniclePhotoTools(frame) {
   frame._toolsTimer = setTimeout(() => frame.classList.remove('show-tools'), 2400);
 }
 
+function startChroniclePhotoReorder(event, setId, index, surface='timeline') {
+  chroniclePointerReorder.start(event, index, { setId, surface });
+}
+
+function canReorderChroniclePhotos(setId, fromIndex, toIndex) {
+  const records = chronicleReorderSets[setId] || [];
+  const fromRecord = records[fromIndex];
+  const toRecord = records[toIndex];
+  if (!fromRecord || !toRecord) return false;
+  if (fromRecord.entryId === toRecord.entryId) return true;
+  announceReorder('這兩張照片屬於不同篇編年史，請進入編輯後再整理。');
+  return false;
+}
+
+async function handleChronicleReorderKey(event, setId, index) {
+  if (!event.altKey && !event.metaKey) return;
+  const delta = event.key === 'ArrowLeft' ? -1 : (event.key === 'ArrowRight' ? 1 : 0);
+  if (!delta) return;
+  event.preventDefault();
+  event.stopPropagation();
+  const targetIndex = index + delta;
+  const didMove = await reorderChroniclePhotos(setId, index, setId, targetIndex);
+  if (didMove) announceReorder(`照片已移到第 ${targetIndex + 1} 張`);
+}
+
+async function reorderChroniclePhotos(fromSetId, fromIndex, toSetId, toIndex) {
+  if (chronicleReorderSaving) return false;
+  if (!fromSetId || fromSetId !== toSetId) return false;
+  if (!Number.isInteger(fromIndex) || !Number.isInteger(toIndex) || fromIndex === toIndex) return false;
+
+  const records = chronicleReorderSets[fromSetId] || [];
+  const fromRecord = records[fromIndex];
+  const toRecord = records[toIndex];
+  if (!fromRecord || !toRecord) return false;
+  if (fromRecord.entryId !== toRecord.entryId) {
+    announceReorder('這兩張照片屬於不同篇編年史，請進入編輯後再整理。');
+    return false;
+  }
+
+  chronicleReorderSaving = true;
+  try {
+    const entry = await getEntry(fromRecord.entryId);
+    const entryRecords = records.filter(record => record.entryId === fromRecord.entryId);
+    const fromEntryIndex = entryRecords.findIndex(record => record.imageIndex === fromRecord.imageIndex);
+    const toEntryIndex = entryRecords.findIndex(record => record.imageIndex === toRecord.imageIndex);
+    if (!entry || fromEntryIndex < 0 || toEntryIndex < 0) return false;
+
+    const reorderedRecords = [...entryRecords];
+    const [movedRecord] = reorderedRecords.splice(fromEntryIndex, 1);
+    reorderedRecords.splice(toEntryIndex, 0, movedRecord);
+    const reorderedImages = reorderedRecords
+      .map(record => entry.images?.[record.imageIndex])
+      .filter(Boolean)
+      .map(normalizeChronicleImageMeta);
+    if (reorderedImages.length !== (entry.images || []).length) return false;
+    const coverImagePath = reorderedImages.find(image => image.path)?.path || null;
+
+    await saveEntryToDB({
+      ...entry,
+      images: reorderedImages,
+      chronicle: {
+        ...(entry.chronicle || {}),
+        coverImagePath
+      },
+      updatedAt: Date.now()
+    });
+    await loadEntries();
+    if (currentPhotoBrowserSetId) renderChroniclePhotoBrowser();
+    return true;
+  } finally {
+    chronicleReorderSaving = false;
+  }
+}
+
+function announceReorder(message) {
+  const live = document.getElementById('reorderLive');
+  if (!live) return;
+  live.textContent = '';
+  requestAnimationFrame(() => {
+    live.textContent = message;
+  });
+}
+
 function handleChroniclePhotoClick(event, setId, index) {
+  if (suppressChroniclePhotoClick) {
+    event.preventDefault();
+    return;
+  }
+  const allPhotos = chronicleReorderSets[setId] || [];
+  if (allPhotos.length > 4 && index === 3) {
+    event.preventDefault();
+    revealChroniclePhotoTools(event.currentTarget);
+    openChroniclePhotoBrowser(setId);
+    return;
+  }
   const frame = event.currentTarget;
   if (window.matchMedia?.('(hover: none)').matches && !frame.classList.contains('show-tools')) {
     event.preventDefault();
@@ -238,7 +482,126 @@ function handlePhotoFrameKey(event, setId, index) {
   if (event.key !== 'Enter' && event.key !== ' ') return;
   event.preventDefault();
   revealChroniclePhotoTools(event.currentTarget);
+  const allPhotos = chronicleReorderSets[setId] || [];
+  if (allPhotos.length > 4 && index === 3) {
+    openChroniclePhotoBrowser(setId);
+    return;
+  }
   openChronicleLightbox(setId, index);
+}
+
+function openChroniclePhotoBrowser(setId) {
+  currentPhotoBrowserSetId = setId;
+  renderChroniclePhotoBrowser();
+  const browser = document.getElementById('chroniclePhotoBrowser');
+  browser?.classList.remove('closing');
+  browser?.classList.add('visible');
+  browser?.setAttribute('aria-hidden', 'false');
+  document.getElementById('chroniclePhotoBrowserClose')?.focus();
+}
+
+function closeChroniclePhotoBrowser() {
+  const browser = document.getElementById('chroniclePhotoBrowser');
+  if (!browser) return;
+  const finish = () => {
+    destroyPhotoBrowserSortable();
+    browser.classList.remove('visible', 'closing');
+    browser.setAttribute('aria-hidden', 'true');
+    currentPhotoBrowserSetId = null;
+  };
+  if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+    finish();
+    return;
+  }
+  browser.classList.add('closing');
+  setTimeout(finish, 150);
+}
+
+function destroyPhotoBrowserSortable() {
+  if (!photoBrowserSortable) return;
+  photoBrowserSortable.destroy();
+  photoBrowserSortable = null;
+}
+
+async function setupPhotoBrowserSortable(grid) {
+  destroyPhotoBrowserSortable();
+  const records = chronicleReorderSets[currentPhotoBrowserSetId] || [];
+  if (!grid || records.length < 2) return;
+
+  const { default: Sortable } = await loadSortable();
+  const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  let sortableDragging = false;
+  photoBrowserSortable = Sortable.create(grid, {
+    draggable: '.chronicle-photo-browser-item',
+    animation: reduceMotion ? 0 : 260,
+    easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+    forceFallback: true,
+    fallbackOnBody: true,
+    fallbackTolerance: 6,
+    fallbackClass: 'photo-sortable-fallback',
+    ghostClass: 'photo-sortable-ghost',
+    chosenClass: 'photo-sortable-chosen',
+    dragClass: 'photo-sortable-drag',
+    swapThreshold: 0.64,
+    invertedSwapThreshold: 0.7,
+    onChoose: () => {
+      sortableDragging = false;
+      suppressChroniclePhotoClick = true;
+      grid.classList.add('sortable-choosing');
+    },
+    onStart: () => {
+      sortableDragging = true;
+      suppressChroniclePhotoClick = true;
+      grid.classList.remove('sortable-choosing');
+      grid.classList.add('sortable-active');
+    },
+    onEnd: async (event) => {
+      sortableDragging = false;
+      grid.classList.remove('sortable-choosing', 'sortable-active');
+      const fromIndex = Number(event.oldIndex);
+      const toIndex = Number(event.newIndex);
+      const setId = currentPhotoBrowserSetId;
+      const didMove = Number.isInteger(fromIndex) && Number.isInteger(toIndex) && fromIndex !== toIndex
+        ? await reorderChroniclePhotos(setId, fromIndex, setId, toIndex)
+        : false;
+      if (didMove) {
+        announceReorder(`照片已移到第 ${toIndex + 1} 張`);
+      } else if (fromIndex !== toIndex) {
+        renderChroniclePhotoBrowser();
+      }
+      setTimeout(() => {
+        suppressChroniclePhotoClick = false;
+      }, 120);
+    },
+    onUnchoose: () => {
+      if (sortableDragging) return;
+      grid.classList.remove('sortable-choosing');
+      setTimeout(() => {
+        suppressChroniclePhotoClick = false;
+      }, 0);
+    }
+  });
+}
+
+function renderChroniclePhotoBrowser() {
+  const grid = document.getElementById('chroniclePhotoBrowserGrid');
+  if (!grid || !currentPhotoBrowserSetId) return;
+  const records = chronicleReorderSets[currentPhotoBrowserSetId] || [];
+  grid.innerHTML = records.map((record, index) => {
+    const item = record.item;
+    const url = mediaUrl(item);
+    if (!url) return '';
+    const caption = item?.caption ? `<figcaption>${escapeHtml(item.caption)}</figcaption>` : '';
+    return `
+      <figure class="chronicle-photo-browser-item" tabindex="0" data-chronicle-set="${currentPhotoBrowserSetId}" data-reorder-index="${index}" onkeydown="handleChronicleReorderKey(event, '${currentPhotoBrowserSetId}', ${index})">
+        <span class="chronicle-drag-handle" aria-hidden="true"><span class="iconify" data-icon="ph:dots-three-vertical-thin"></span></span>
+        <img src="${url}" loading="lazy" alt="${escapeHtml(item?.caption || `Chronicle photo ${index + 1}`)}" draggable="false" style="${chronicleImageStyle(item)}">
+        <span class="chronicle-photo-browser-index">${index + 1}</span>
+        ${caption}
+      </figure>
+    `;
+  }).join('');
+  setupPhotoBrowserSortable(grid);
 }
 
 function openChronicleLightbox(setId, index=0) {
@@ -424,10 +787,12 @@ async function saveFocusEditor() {
 
 
   return {
+    closeChroniclePhotoBrowser,
     closeFocusEditor,
     closePhotoLightbox,
     centerFocusEditor,
     endFocusDrag,
+    handleChronicleReorderKey,
     handleChroniclePhotoClick,
     handlePhotoFrameKey,
     moveFocusDrag,
@@ -440,6 +805,7 @@ async function saveFocusEditor() {
     scrollToChronicleYear,
     setFocusAxis,
     setFocusFromPointer,
+    startChroniclePhotoReorder,
     startFocusDrag
   };
 }

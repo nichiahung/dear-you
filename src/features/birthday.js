@@ -2,6 +2,7 @@ import { MARLENE_BIRTHDAY } from '../core/constants.js';
 
 const BIRTHDAY_MAGIC_STORAGE_KEY = 'birthdayMagicEnabled';
 const BIRTHDAY_MAGIC_PREVIEW_STORAGE_KEY = 'birthdayMagicPreviewEnabled';
+const DAILY_UNLOCK_STORAGE_KEY = 'dearYouUnlockedOn';
 const BIRTHDAY_FLOWERS = [
   { src: 'assets/characters/birthday-flower-smile.png', className: 'flower-smile' },
   { src: 'assets/characters/birthday-flower-pink.png', className: 'flower-pink' }
@@ -32,6 +33,28 @@ const PETAL_TEMPLATES = [
 export function createBirthdayFeature({ showView, loadEntries }) {
   let previewBirthdayMode = false;
   let birthdayMagicEnabled = false;
+
+  function todayKey(){
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  function markUnlockedToday(){
+    try {
+      window.localStorage.setItem(DAILY_UNLOCK_STORAGE_KEY, todayKey());
+    } catch (_) {}
+  }
+
+  function hasUnlockedToday(){
+    try {
+      return window.localStorage.getItem(DAILY_UNLOCK_STORAGE_KEY) === todayKey();
+    } catch (_) {
+      return false;
+    }
+  }
 
   function isActualBirthdayToday(){
     const now = new Date();
@@ -361,6 +384,7 @@ export function createBirthdayFeature({ showView, loadEntries }) {
     const input=`${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
 
     if(input===MARLENE_BIRTHDAY){
+      markUnlockedToday();
       msg.textContent='';
       showView('dedication');
     } else {
@@ -381,6 +405,12 @@ export function createBirthdayFeature({ showView, loadEntries }) {
     loadEntries();
   }
 
+  function resumeDailyUnlock(){
+    if (!hasUnlockedToday()) return false;
+    continueToBook();
+    return true;
+  }
+
   return {
     applyBirthdayMagic,
     continueToBook,
@@ -388,6 +418,7 @@ export function createBirthdayFeature({ showView, loadEntries }) {
     hideBirthdayBear,
     hideBirthdayDrawing,
     initBirthdayToggle,
+    resumeDailyUnlock,
     toggleBirthdayMagic,
     waitForOpeningFonts
   };
