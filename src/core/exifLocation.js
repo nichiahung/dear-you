@@ -11,7 +11,7 @@ async function reverseGeocode(latitude, longitude) {
   if (geocodeCache.has(key)) return geocodeCache.get(key);
   try {
     const resp = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10`,
+      `https://nominatim.openstreetmap.org/reverse?format=json&accept-language=en&lat=${latitude}&lon=${longitude}&zoom=10`,
       { headers: { 'User-Agent': 'dear-you/1.0' } }
     );
     if (!resp.ok) { geocodeCache.set(key, null); return null; }

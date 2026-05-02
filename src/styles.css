@@ -3495,6 +3495,34 @@
     flex-shrink: 0;
   }
 
+  .chronicle-location-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 4px 0 12px;
+  }
+
+  .chronicle-location-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: rgba(250, 245, 238, 0.6);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 12px;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: var(--mauve);
+    line-height: 1.4;
+  }
+
+  .chronicle-location-tag .iconify {
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+
   .chronicle-memory-title {
     font-family: 'Cormorant Garamond', 'Noto Serif TC', serif;
     font-weight: 400;
