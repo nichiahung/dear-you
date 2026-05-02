@@ -43,7 +43,7 @@ export function renderEntry(e, isVoice=false) {
           <button onclick="confirmDelete('${entryId}')"><span class="iconify" data-icon="ph:trash-thin"></span>remove</button>
         </span>
       </div>
-      ${isVoice ? `<div class="work-type-tag"><span class="iconify" data-icon="${workType.icon}"></span>${work.label}</div>` : ''}
+      ${isVoice ? `<div class="work-tags"><div class="work-type-tag"><span class="iconify" data-icon="${workType.icon}"></span>${work.label}</div><div class="work-child-tag">${work.childLabel}</div></div>` : ''}
       ${e.title?`<h3 class="entry-title">${escapeHtml(e.title)}</h3>`:''}
       ${e.body?renderMarkdown(e.body, e.bodyFormat, 'entry-body markdown-content'):''}
       ${images?`<div class="entry-media">${images}</div>`:''}

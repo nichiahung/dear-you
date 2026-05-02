@@ -5,6 +5,8 @@ import {
   CATEGORY_PLACEHOLDERS,
   DEFAULT_FEATURED_IMAGE_INDEX,
   DEFAULT_WORK_TYPE,
+  DEFAULT_WORK_CHILD,
+  WORK_CHILDREN,
   WORK_TYPES
 } from './core/constants.js';
 import {
@@ -22,6 +24,7 @@ import {
   renderWorkFilters,
   workForEntry
 } from './features/works.js';
+
 import { createMarginsFeature } from './features/margins.js';
 import { createChroniclesFeature } from './features/chronicles.js';
 import { createEditorActions, mediaPreviewMarkup, renderEntry } from './features/editor.js';
@@ -53,7 +56,9 @@ let draftAudios=[];
 let mediaRecorder=null;
 let recordChunks=[];
 let selectedWorkType='drawing';
+let selectedWorkChild='kris';
 let currentWorkFilter='all';
+let currentChildFilter='all';
 let isSavingEntry=false;
 let imageCaptionEditorIndex=null;
 let imageCaptionCropper=null;
@@ -194,7 +199,7 @@ async function loadEntries() {
   const isVoices = currentCategory === 'voices';
   const isMargins = currentCategory === 'margins';
   const workFilters = document.getElementById('workFilters');
-  if (workFilters) workFilters.style.display = isVoices ? 'grid' : 'none';
+  if (workFilters) workFilters.style.display = isVoices ? 'flex' : 'none';
   document.body.classList.toggle('chronicles-mode', currentCategory === 'chronicles');
   document.body.classList.toggle('margins-mode', isMargins);
 
@@ -208,11 +213,15 @@ async function loadEntries() {
     return;
   }
 
-  const visibleList = isVoices && currentWorkFilter !== 'all'
-    ? list.filter(entry => workForEntry(entry).type === currentWorkFilter)
+  const visibleList = isVoices
+    ? list.filter(entry => {
+        const w = workForEntry(entry);
+        return (currentWorkFilter === 'all' || w.type === currentWorkFilter)
+            && (currentChildFilter === 'all' || w.child === currentChildFilter);
+      })
     : list;
 
-  if (isVoices) renderWorkFilters(list, currentWorkFilter);
+  if (isVoices) renderWorkFilters(list, currentWorkFilter, currentChildFilter);
 
   countEl.textContent = visibleList.length>0 ? `· ${visibleList.length} ${visibleList.length===1?'entry':'entries'}` : '';
 
@@ -252,7 +261,11 @@ async function openEditor(entry=null, defaults={}){
   selectedWorkType = isWorksEditor
     ? workForEntry(entry || { category: 'voices', work: defaults.work || { type: currentWorkFilter !== 'all' ? currentWorkFilter : DEFAULT_WORK_TYPE } }).type
     : DEFAULT_WORK_TYPE;
+  selectedWorkChild = isWorksEditor
+    ? workForEntry(entry || { category: 'voices', work: defaults.work || { child: currentChildFilter !== 'all' ? currentChildFilter : DEFAULT_WORK_CHILD } }).child
+    : DEFAULT_WORK_CHILD;
   renderWorkTypeOptions(isWorksEditor);
+  renderWorkChildOptions(isWorksEditor);
   await renderMarginEditorFields(entry, defaults, isMarginsEditor);
 
   draftImages.forEach(i=>URL.revokeObjectURL(i.url));
@@ -298,6 +311,29 @@ function renderWorkTypeOptions(visible) {
 function selectWorkType(type) {
   selectedWorkType = WORK_TYPES[type] ? type : DEFAULT_WORK_TYPE;
   renderWorkTypeOptions(true);
+}
+
+function renderWorkChildOptions(visible) {
+  const field = document.getElementById('workChildField');
+  const wrap = document.getElementById('workChildOptions');
+  if (!field || !wrap) return;
+  field.style.display = visible ? 'block' : 'none';
+  if (!visible) { wrap.innerHTML = ''; return; }
+  wrap.innerHTML = Object.entries(WORK_CHILDREN).map(([child, data]) => `
+    <button type="button" class="work-type-option ${selectedWorkChild === child ? 'active' : ''}" onclick="selectWorkChild('${child}')">
+      <span>${data.label}</span>
+    </button>
+  `).join('');
+}
+
+function selectWorkChild(child) {
+  selectedWorkChild = WORK_CHILDREN[child] ? child : DEFAULT_WORK_CHILD;
+  renderWorkChildOptions(true);
+}
+
+function setChildFilter(child) {
+  currentChildFilter = child === 'all' || WORK_CHILDREN[child] ? child : 'all';
+  renderEntries();
 }
 
 function closeEditor(){
@@ -351,7 +387,7 @@ async function saveEntry(){
     entry.images = draftImages.map(normalizeChronicleImageMeta);
   }
   if (currentCategory === 'voices') {
-    const work = normalizeWork({ type: selectedWorkType, featuredImageIndex: DEFAULT_FEATURED_IMAGE_INDEX });
+    const work = normalizeWork({ type: selectedWorkType, child: selectedWorkChild, featuredImageIndex: DEFAULT_FEATURED_IMAGE_INDEX });
     entry.work = work;
   }
   if(editingId){
@@ -808,7 +844,7 @@ async function toggleRecord(){
         const previousCategory = currentCategory;
         currentCategory=t.dataset.cat;
         closePhotoLightbox();
-        if (currentCategory === 'voices' && previousCategory !== 'voices') currentWorkFilter = 'all';
+        if (currentCategory === 'voices' && previousCategory !== 'voices') { currentWorkFilter = 'all'; currentChildFilter = 'all'; }
         const cat=CATEGORY_LABELS[currentCategory];
         document.getElementById('sectionTitle').textContent=cat.en;
         updateFrontispiece(currentCategory);
@@ -858,7 +894,9 @@ Object.assign(window, {
   selectMarginAuthor,
   selectMarginBook,
   selectMarginEditorAuthor,
+  selectWorkChild,
   selectWorkType,
+  setChildFilter,
   setWorkFilter,
   startImageReorder,
   startChroniclePhotoReorder,
