@@ -5424,6 +5424,33 @@
   }
   .media-chip audio { display: block; height: 36px; padding: 0 4px; }
 
+  .media-featured-btn {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: rgba(250, 245, 238, 0.85);
+    color: var(--ink-faded);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    border-radius: 50%;
+    transition: background 0.18s, color 0.18s;
+  }
+
+  .media-featured-btn.active {
+    background: var(--rose-light);
+    color: var(--rose-deep);
+  }
+
+  .media-chip-image.is-featured {
+    outline: 2px solid var(--rose);
+  }
+
   .media-order-controls {
     display: grid;
     grid-template-columns: 30px minmax(0, 1fr) 30px;
@@ -6323,4 +6350,41 @@
     .date-inputs input { width: 68px; font-size: 20px; }
     .date-label span { width: 68px; }
     .section-title { font-size: 22px; }
+  }
+
+  .undo-toast {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--ink);
+    color: var(--paper-cream);
+    font-family: 'Noto Serif TC', 'Cormorant Garamond', serif;
+    font-size: 14px;
+    letter-spacing: 1px;
+    padding: 12px 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.22);
+    z-index: 9999;
+    white-space: nowrap;
+  }
+
+  .undo-toast[hidden] { display: none; }
+
+  .undo-toast button {
+    background: none;
+    border: 1px solid rgba(255,255,255,0.4);
+    color: var(--rose-light);
+    font-family: inherit;
+    font-size: 13px;
+    letter-spacing: 1.5px;
+    padding: 4px 12px;
+    cursor: pointer;
+    transition: background 0.18s;
+  }
+
+  .undo-toast button:hover {
+    background: rgba(255,255,255,0.1);
   }
