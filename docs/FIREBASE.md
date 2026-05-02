@@ -96,6 +96,30 @@ firebase functions:secrets:set GOOGLE_BOOKS_API_KEY --project dearyou-bfffc
 
 本機或 function 尚未部署時，前端會 fallback 到 Open Library client-side search。
 
+## GitHub Actions Deploy
+
+`main` push 會透過 `.github/workflows/deploy.yml` build Vite frontend 並部署 Firebase Hosting。
+
+Cloud Functions 部署保留為手動 workflow input：
+
+```text
+Actions -> Deploy to Firebase -> Run workflow -> deploy_functions=true
+```
+
+部署 Functions 時，GitHub secret `FIREBASE_SERVICE_ACCOUNT_DEARYOU_BFFFC` 對應的 service account 需要能 act as Firebase App Engine default service account：
+
+```text
+dearyou-bfffc@appspot.gserviceaccount.com
+```
+
+若缺少權限，GitHub Actions 會在 functions deploy 時失敗並提示需要：
+
+```text
+iam.serviceAccounts.ActAs
+```
+
+由 project Owner 到 Google Cloud IAM 補上 `Service Account User` role 後，再手動重跑 workflow 並勾選 `deploy_functions`。
+
 ## Local Emulator Validation
 
 Vite dev server 不會套用 Firebase Hosting rewrite：

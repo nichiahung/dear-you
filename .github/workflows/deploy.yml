@@ -1,4 +1,4 @@
-name: Deploy to Firebase Hosting
+name: Deploy to Firebase
 
 on:
   push:
@@ -16,6 +16,12 @@ on:
       - 'storage.rules'
       - '.github/workflows/deploy.yml'
   workflow_dispatch:
+    inputs:
+      deploy_functions:
+        description: 'Also deploy Cloud Functions. Requires iam.serviceAccounts.ActAs for the Firebase service account.'
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: deploy-live
@@ -41,6 +47,7 @@ jobs:
         run: npm run build
 
       - name: Install functions dependencies
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_functions }}
         run: npm ci
         working-directory: functions
 
@@ -49,5 +56,9 @@ jobs:
           printf '%s' '${{ secrets.FIREBASE_SERVICE_ACCOUNT_DEARYOU_BFFFC }}' > "$RUNNER_TEMP/firebase-service-account.json"
           echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/firebase-service-account.json" >> "$GITHUB_ENV"
 
-      - name: Deploy Firebase Hosting and Functions
-        run: npx firebase-tools deploy --only hosting,functions --project dearyou-bfffc --non-interactive
+      - name: Deploy Firebase Hosting
+        run: npx firebase-tools deploy --only hosting --project dearyou-bfffc --non-interactive
+
+      - name: Deploy Firebase Functions
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_functions }}
+        run: npx firebase-tools deploy --only functions --project dearyou-bfffc --non-interactive
