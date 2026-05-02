@@ -57,6 +57,8 @@ GitHub Actions deploy 需要 repo secret：
 FIREBASE_WEB_API_KEY
 ```
 
+workflow 也接受 `VITE_FIREBASE_API_KEY` 作為 fallback secret name，方便沿用 `.env.local` 的命名。
+
 這個 key 仍會出現在瀏覽器 bundle 中；它不是密碼。安全重點是 Google Cloud API key restrictions、Firebase Auth、Firestore/Storage Rules 與 App Check。
 
 ## Cloud Functions

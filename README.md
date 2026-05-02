@@ -74,7 +74,7 @@ npm run dev
 
 Pushes to `main` that touch `index.html`, `firebase.json`, or `.firebaserc` automatically deploy Hosting via GitHub Actions (`.github/workflows/deploy.yml`).
 
-One-time setup — add repo secret `FIREBASE_SERVICE_ACCOUNT_DEARYOU_BFFFC` containing a Firebase service-account JSON key with the `Firebase Hosting Admin` role. Also add repo secret `FIREBASE_WEB_API_KEY` containing the restricted Firebase Web API key used at build time. See [docs/FIREBASE.md](docs/FIREBASE.md) for the exact steps.
+One-time setup — add repo secret `FIREBASE_SERVICE_ACCOUNT_DEARYOU_BFFFC` containing a Firebase service-account JSON key with the `Firebase Hosting Admin` role. Also add repo secret `FIREBASE_WEB_API_KEY` containing the restricted Firebase Web API key used at build time; `VITE_FIREBASE_API_KEY` is also accepted as a fallback secret name. See [docs/FIREBASE.md](docs/FIREBASE.md) for the exact steps.
 
 ### Manual deploy
 

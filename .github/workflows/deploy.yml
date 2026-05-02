@@ -45,7 +45,7 @@ jobs:
 
       - name: Build frontend
         env:
-          VITE_FIREBASE_API_KEY: ${{ secrets.FIREBASE_WEB_API_KEY }}
+          VITE_FIREBASE_API_KEY: ${{ secrets.FIREBASE_WEB_API_KEY || secrets.VITE_FIREBASE_API_KEY }}
         run: |
           test -n "$VITE_FIREBASE_API_KEY"
           npm run build
