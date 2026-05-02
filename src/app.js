@@ -451,6 +451,12 @@ async function saveEntry(){
   if (currentCategory === 'chronicles') {
     const { normalizeChronicleImageMeta } = await getChroniclesFeature();
     const year = Number((entry.date || '').slice(0, 4)) || new Date().getFullYear();
+    isSavingEntry = true;
+    setEditorSaving(true, {
+      phase: 'saving',
+      title: hasImages ? 'Saving photos' : 'Saving entry',
+      copy: hasImages ? '正在保存圖片與定位' : '正在保存這一頁'
+    });
     await resolveDraftImageLocations();
     const gpsLocations = [...new Set(draftImages.map(img => img.gpsLocation).filter(Boolean))];
     const manualLocation = document.getElementById('fChronicleLocation')?.value.trim() || '';
