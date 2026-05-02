@@ -101,7 +101,14 @@ firebase functions:secrets:set GOOGLE_BOOKS_API_KEY --project dearyou-bfffc
 
 ## Local Emulator Check
 
-Vite dev server 不會套用 Firebase Hosting rewrite，所以 `http://localhost:5173/api/searchBooks` 會回 Vite HTML。要測正式 rewrite 行為，使用 Firebase emulator：
+Vite dev server 會把 `/api` proxy 到 production Hosting，方便本機開發時使用書本搜尋：
+
+```bash
+npm run dev
+curl "http://localhost:5173/api/searchBooks?q=Norwegian%20Wood"
+```
+
+這只能確認前端 fetch path 與 production function 可用；要驗證 Firebase Hosting rewrite 本身，使用 Firebase emulator：
 
 ```bash
 npm run build
@@ -139,11 +146,18 @@ curl "http://127.0.0.1:5002/api/searchBooks?q=Norwegian%20Wood"
   - `ph:bookmark-simple-thin`：Local only
 - 開發時可用本機或 `?birthdayPreview=1` 顯示生日彩蛋測試按鈕，手動預覽花瓣與生日訊息
 
+## Recent UX and Loading Updates
+
+- Rich text editing：Letters、Margins、Chronicles、Works 的 markdown 欄位使用 lazy-loaded rich text editor，避免初始載入時就下載完整編輯器。
+- Image workflows：圖片可補 caption，裁切工具採 lazy load；Chronicles photo browser 支援照片排序。
+- Startup loading：`app-booting` guard 會在初始狀態判定完成前隱藏主要畫面，降低已解鎖 reload、未解鎖 lock screen、生日模式之間的閃爍與空白轉場。
+- Bundle optimization：Tiptap editor、CropperJS、SortableJS 拆成按需載入 chunk，讓 main JS 維持在 Vite warning threshold 以下。
+
 ## Important Agent Notes
 
 - 不要用舊版 IndexedDB-only HTML 覆蓋 `index.html`，否則會移除 Firebase cloud sync。
 - 不要直接部署 repo root；Hosting public 目錄是 `dist`，需先執行 `npm run build`。
-- 不要用 Vite dev server 判斷 Firebase rewrite；`/api/searchBooks` rewrite 需用 Firebase Hosting emulator 或部署後驗證。
+- Vite dev server 的 `/api` 是 proxy，不是 Firebase Hosting rewrite；rewrite 需用 Firebase Hosting emulator 或部署後驗證。
 - 修改資料模型時，同步更新 `firestore.rules`、`storage.rules`、[Firebase Architecture](docs/FIREBASE.md)。
 - 修改素材、字體、icon、配色時，同步更新 [Assets and Licensing](docs/ASSETS.md)。
 - 修改未來計畫或技術債時，同步更新 [Roadmap and Agent Notes](docs/ROADMAP.md)。

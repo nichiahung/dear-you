@@ -140,13 +140,14 @@ iam.serviceAccounts.ActAs
 
 ## Local Emulator Validation
 
-Vite dev server 不會套用 Firebase Hosting rewrite：
+Vite dev server 會把 `/api` proxy 到 production Hosting，方便本機開發時使用書本搜尋：
 
-```text
-http://localhost:5173/api/searchBooks -> Vite HTML fallback
+```bash
+npm run dev
+curl "http://localhost:5173/api/searchBooks?q=Norwegian%20Wood"
 ```
 
-要驗證正式 rewrite 行為，先 build，再啟動 Hosting + Functions emulators：
+這只能確認前端 fetch path 與 production function 可用；要驗證 Firebase Hosting rewrite 本身，先 build，再啟動 Hosting + Functions emulators：
 
 ```bash
 npm run build
@@ -372,7 +373,7 @@ Google Photos / Google URL 討論：
 
 - 不要把正式儲存退回 IndexedDB-only。
 - Hosting 部署前要先 `npm run build`，不要直接部署原始 `index.html`。
-- `/api/searchBooks` rewrite 需用 Firebase Hosting emulator 或部署環境驗證；不要用 Vite dev server 的 `/api/searchBooks` 結果判斷。
+- Vite dev server 的 `/api` 是 proxy，不是 Firebase Hosting rewrite；`/api/searchBooks` rewrite 需用 Firebase Hosting emulator 或部署環境驗證。
 - 修改資料模型時同步更新 rules、前端 render/save 邏輯與本文件。
 - 新增 media provider 時保留 `source` 欄位，避免混淆 Storage URL、external URL、local Blob。
 - Firebase API key 是 public config，不是後端 secret；不要 commit literal，並在 Google Cloud Console 限制允許的 referrer 與 API。

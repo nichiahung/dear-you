@@ -6256,6 +6256,85 @@
     .voice-card .entry-media .voice-image-4 {
       height: auto;
     }
+    .markdown-toolbar {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding-bottom: 10px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .markdown-toolbar::-webkit-scrollbar {
+      display: none;
+    }
+    .markdown-toolbar button {
+      flex: 0 0 auto;
+    }
+    .markdown-link-popover,
+    .markdown-image-popover {
+      grid-template-columns: 1fr;
+      align-items: stretch;
+    }
+    .markdown-link-popover button,
+    .markdown-image-popover button {
+      width: 100%;
+    }
+    .focus-editor,
+    .image-caption-editor,
+    .chronicle-photo-browser {
+      align-items: stretch;
+      padding: 12px;
+    }
+    .focus-editor-card,
+    .image-caption-editor-card,
+    .chronicle-photo-browser-card {
+      width: 100%;
+      max-height: calc(100dvh - 24px);
+      padding: 18px 14px;
+    }
+    .focus-editor-title,
+    .image-caption-editor-title,
+    .chronicle-photo-browser-title {
+      padding-right: 36px;
+    }
+    .focus-editor-preview {
+      padding: 5px;
+    }
+    .focus-editor-preview::before,
+    .focus-editor-preview::after {
+      inset: 5px;
+    }
+    .focus-range {
+      grid-template-columns: 54px minmax(0, 1fr);
+      gap: 8px;
+    }
+    .focus-editor-actions,
+    .image-caption-editor-actions {
+      flex-wrap: wrap;
+    }
+    .image-caption-cropper-shell {
+      padding: 6px;
+    }
+    .image-caption-cropper {
+      min-height: 240px;
+    }
+    .image-caption-cropper cropper-canvas {
+      height: min(42vh, 300px);
+      min-height: 220px;
+    }
+    .image-caption-cropper-footer {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 8px;
+      letter-spacing: 1.4px;
+    }
+    .chronicle-photo-browser-grid {
+      grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+      gap: 10px;
+    }
+    .chronicle-photo-browser-subtitle {
+      margin-right: 36px;
+    }
     .modal-card { padding: 32px 22px; }
     .modal-card::before { top: 10px; left: 10px; right: 10px; bottom: 10px; }
     .entry { padding: 28px 22px; }

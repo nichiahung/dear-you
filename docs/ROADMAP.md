@@ -79,7 +79,7 @@
 - Firebase client、entry repository 與 IndexedDB fallback 已拆到 `src/services`；改資料模型時仍需同步 cloud/local 兩側。
 - `src/services/firebaseCloud.js` 與 `src/app.js` 之間仍靠 `dearYouCloudReady` event 銜接，不能移除。
 - `initCloudStore()` 會先啟用 cloud，再背景執行 local migration；migration 失敗不應阻止 cloud read。
-- `/api/searchBooks` rewrite 已用 Firebase Hosting + Functions emulator 驗證；Vite dev server 不支援該 rewrite。
+- `/api/searchBooks` rewrite 已用 Firebase Hosting + Functions emulator 驗證；Vite dev server 只提供 `/api` proxy，不代表 Hosting rewrite 已驗證。
 - Firestore shared path 是 `books/dear-you`，不要回到 `users/{uid}` 作為主要資料源。
 - 圖片與錄音目前靠 Storage URL 顯示；如果新增 external URL，要保持 render path 相容。
 
