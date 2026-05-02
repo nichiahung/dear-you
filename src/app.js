@@ -12,6 +12,7 @@ import {
 import {
   inferImageFocus
 } from './core/media.js';
+import { extractLocationFromImage } from './core/exifLocation.js';
 import { createPointerReorder } from './core/pointerReorder.js';
 import {
   getMarkdownValue,
@@ -379,10 +380,12 @@ async function saveEntry(){
   };
   if (currentCategory === 'chronicles') {
     const year = Number((entry.date || '').slice(0, 4)) || new Date().getFullYear();
+    const gpsLocations = [...new Set(draftImages.map(img => img.gpsLocation).filter(Boolean))];
     entry.chronicle = {
       year,
       eyebrow: String(year),
-      coverImagePath: draftImages.find(image => image.path)?.path || null
+      coverImagePath: draftImages.find(image => image.path)?.path || null,
+      location: gpsLocations.join(' · ') || ''
     };
     entry.images = draftImages.map(normalizeChronicleImageMeta);
   }
@@ -397,7 +400,8 @@ async function saveEntry(){
     if (currentCategory === 'chronicles') {
       entry.chronicle = {
         ...(old?.chronicle || {}),
-        ...entry.chronicle
+        ...entry.chronicle,
+        location: entry.chronicle.location || old?.chronicle?.location || ''
       };
     }
     if (currentCategory === 'voices') {
@@ -473,7 +477,11 @@ async function addImages(e){
   const files = Array.from(e.target.files);
   for (const f of files) {
     const focus = await inferImageFocus(f);
-    draftImages.push({blob:f,url:URL.createObjectURL(f),name:f.name,...focus,fit:'cover'});
+    const imgRef = {blob:f,url:URL.createObjectURL(f),name:f.name,...focus,fit:'cover'};
+    draftImages.push(imgRef);
+    if (currentCategory === 'chronicles') {
+      extractLocationFromImage(f).then(loc => { if (loc) imgRef.gpsLocation = loc; });
+    }
   }
   e.target.value='';
   renderMediaPreview();

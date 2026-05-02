@@ -3479,6 +3479,22 @@
     min-height: 24px;
   }
 
+  .chronicle-memory-location {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 13px;
+    letter-spacing: 1.5px;
+    color: var(--mauve);
+    margin-top: 4px;
+  }
+
+  .chronicle-memory-location .iconify {
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
   .chronicle-memory-title {
     font-family: 'Cormorant Garamond', 'Noto Serif TC', serif;
     font-weight: 400;
