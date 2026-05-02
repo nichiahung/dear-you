@@ -21,7 +21,7 @@ import {
 } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCe3kmMwYZ4_v9L_0xnetosfWYM9UeoN9A",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: "dearyou-bfffc.firebaseapp.com",
   projectId: "dearyou-bfffc",
   storageBucket: "dearyou-bfffc.firebasestorage.app",
@@ -29,6 +29,14 @@ const firebaseConfig = {
   appId: "1:290995743342:web:aba96f0bc727af9bb1147f",
   measurementId: "G-JSR7N4FBSV"
 };
+
+if (!firebaseConfig.apiKey) {
+  const error = new Error("Missing VITE_FIREBASE_API_KEY");
+  error.code = "firebase/missing-config";
+  window.dearYouCloudError = error;
+  window.dispatchEvent(new CustomEvent("dearYouCloudUnavailable", { detail: error }));
+  throw error;
+}
 
 const app = initializeApp(firebaseConfig);
 const analytics = await isSupported().then((supported) => supported ? getAnalytics(app) : null);
