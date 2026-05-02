@@ -6303,6 +6303,10 @@
       grid-template-columns: repeat(2, minmax(0, 1fr));
       margin-top: -10px;
     }
+    .work-filter-row,
+    .work-child-filter-row {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
     .work-filter-btn {
       min-height: 76px;
     }
