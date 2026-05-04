@@ -105,7 +105,7 @@ function showView(name) {
   else document.getElementById('app').classList.remove('visible');
 }
 
-let currentCategory='letters';
+let currentCategory='chronicles';
 let editingId=null;
 let draftImages=[];
 let draftAudios=[];
@@ -947,7 +947,7 @@ async function toggleRecord(){
     const CHAPTERS = {
       letters: {
         cls: 'fp-letters',
-        chapter: 'CH. I',
+        chapter: 'CH. IV',
         zh: '寫給妳的信',
         en: 'Letters',
         introTitle: 'A letter kept in the quiet pages of us.',
@@ -955,7 +955,7 @@ async function toggleRecord(){
       },
       margins: {
         cls: 'fp-margins',
-        chapter: 'CH. II',
+        chapter: 'CH. III',
         zh: '書頁邊的字',
         en: 'Margins',
         introTitle: 'Reading together, leaving words in the margins for each other.',
@@ -963,7 +963,7 @@ async function toggleRecord(){
       },
       chronicles: {
         cls: 'fp-chronicles',
-        chapter: 'CH. III',
+        chapter: 'CH. I',
         zh: '我們的編年史',
         en: 'Chronicles',
         introTitle: 'The years gathered gently, one memory at a time.',
@@ -971,7 +971,7 @@ async function toggleRecord(){
       },
       voices: {
         cls: 'fp-voices',
-        chapter: 'CH. IV',
+        chapter: 'CH. II',
         zh: '孩子的作品',
         en: 'Works',
         introTitle: "The children's works, saved like small bright offerings.",
