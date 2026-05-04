@@ -947,7 +947,6 @@ async function toggleRecord(){
     const CHAPTERS = {
       letters: {
         cls: 'fp-letters',
-        chapter: 'CH. IV',
         zh: '寫給妳的信',
         en: 'Letters',
         introTitle: 'A letter kept in the quiet pages of us.',
@@ -955,7 +954,6 @@ async function toggleRecord(){
       },
       margins: {
         cls: 'fp-margins',
-        chapter: 'CH. III',
         zh: '書頁邊的字',
         en: 'Margins',
         introTitle: 'Reading together, leaving words in the margins for each other.',
@@ -963,7 +961,6 @@ async function toggleRecord(){
       },
       chronicles: {
         cls: 'fp-chronicles',
-        chapter: 'CH. I',
         zh: '我們的編年史',
         en: 'Chronicles',
         introTitle: 'The years gathered gently, one memory at a time.',
@@ -971,13 +968,18 @@ async function toggleRecord(){
       },
       voices: {
         cls: 'fp-voices',
-        chapter: 'CH. II',
         zh: '孩子的作品',
         en: 'Works',
         introTitle: "The children's works, saved like small bright offerings.",
         introCopy: 'Drawings, awards, and handmade pieces they made for you, each with the story around it.'
       }
     };
+
+
+    function getChapterLabel(cat) {
+      const chapterTab = document.querySelector(`.chapter[data-cat="${cat}"] .chapter-num`);
+      return chapterTab?.textContent?.trim()?.toUpperCase() || 'CH.';
+    }
 
     function updateFrontispiece(cat) {
       const fp = document.getElementById('frontispiece');
@@ -994,7 +996,7 @@ async function toggleRecord(){
       chapter.className = 'caption-chapter';
       zh.className = 'caption-zh';
       en.className = 'caption-en';
-      chapter.textContent = data.chapter;
+      chapter.textContent = getChapterLabel(cat);
       zh.textContent = data.zh;
       en.textContent = data.en;
       cap.replaceChildren(chapter, zh, en);
