@@ -17,10 +17,10 @@ export const WORK_CHILDREN = {
 export const DEFAULT_WORK_CHILD = 'kris';
 
 export const CATEGORY_LABELS = {
-  letters: { zh: '寫給妳的信', en: 'Letters', chNum: 'Chapter I' },
-  margins: { zh: '書頁邊的字', en: 'Margins', chNum: 'Chapter II' },
-  chronicles: { zh: '我們的編年史', en: 'Chronicles', chNum: 'Chapter III' },
-  voices: { zh: '孩子的作品', en: 'Works', chNum: 'Chapter IV' }
+  letters: { zh: '寫給妳的信', en: 'Letters', chNum: 'Chapter IV' },
+  margins: { zh: '書頁邊的字', en: 'Margins', chNum: 'Chapter III' },
+  chronicles: { zh: '我們的編年史', en: 'Chronicles', chNum: 'Chapter I' },
+  voices: { zh: '孩子的作品', en: 'Works', chNum: 'Chapter II' }
 };
 
 export const CATEGORY_PLACEHOLDERS = {
