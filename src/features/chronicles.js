@@ -281,14 +281,17 @@ function renderChroniclePhotoCluster(images, hiddenCount, title, lightboxSetId) 
 }
 
 function renderEmptyChronicleYear(year) {
+  const title = '這一年，仍在慢慢長成我們的樣子。';
+  const copy = '願未來的我們，仍有彼此，也能一起把說好的夢想，一一實現。';
+
   return `
     <div class="chronicle-empty-year">
       <div class="chronicle-empty-frame">
         <div class="chronicle-empty-photo">photo waits here</div>
         <div class="chronicle-empty-copy">
           <span class="chronicle-memory-date">${year}</span>
-          <h3 class="chronicle-memory-title">這一年還等著被寫下來。</h3>
-          <div class="chronicle-text-placeholder">放上幾張代表照片，再留一段話給未來的我們。</div>
+          <h3 class="chronicle-memory-title">${title}</h3>
+          <div class="chronicle-text-placeholder">${copy}</div>
           <button class="chronicle-add-year" onclick="openChronicleYearEditor(${year})">Add photo</button>
         </div>
       </div>
