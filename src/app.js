@@ -1019,6 +1019,10 @@ async function toggleRecord(){
       });
     });
 
+    document.querySelectorAll('.chapter').forEach(x=>x.classList.toggle('active', x.dataset.cat === currentCategory));
+    document.getElementById('sectionTitle').textContent=CATEGORY_LABELS[currentCategory].en;
+    updateFrontispiece(currentCategory);
+
     ['bYear','bMonth','bDay'].forEach(id=>{
       document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter')handleUnlock();});
     });
