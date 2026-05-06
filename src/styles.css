@@ -3506,24 +3506,43 @@
   .chronicle-location-tags {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
-    margin: 4px 0 12px;
+    align-items: center;
+    gap: 7px;
+    margin: 4px 0 16px;
   }
 
   .chronicle-location-tag {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 3px 10px;
+    min-height: 28px;
+    padding: 3px 11px;
     border: 1px solid var(--line);
     border-radius: 999px;
     background: rgba(250, 245, 238, 0.6);
     font-family: 'Cormorant Garamond', serif;
     font-size: 12px;
-    letter-spacing: 1.4px;
+    letter-spacing: 1.1px;
     text-transform: uppercase;
     color: var(--mauve);
     line-height: 1.4;
+  }
+
+  .chronicle-location-more {
+    padding-inline: 12px;
+    color: var(--ink-faded);
+    background: rgba(250, 245, 238, 0.42);
+  }
+
+  .chronicle-coordinate-meta {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    color: var(--ink-faded);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 12px;
+    font-style: italic;
+    letter-spacing: 1.4px;
   }
 
   .chronicle-location-tag .iconify {
@@ -4170,6 +4189,89 @@
 
   body.chronicles-mode .chronicle-empty-year:hover {
     opacity: 1;
+  }
+
+  body.chronicles-mode .chronicle-empty-year.is-promise-year {
+    min-height: clamp(150px, 16vw, 220px);
+    margin: 8px 0 18px;
+    padding: clamp(10px, 1.8vw, 18px);
+    border-color: rgba(201, 168, 168, 0.78);
+    background:
+      linear-gradient(135deg, rgba(250, 245, 238, 0.88), rgba(245, 236, 234, 0.58)),
+      radial-gradient(circle at 88% 18%, rgba(176, 141, 87, 0.12), transparent 34%);
+    opacity: 1;
+  }
+
+  body.chronicles-mode .chronicle-empty-year.is-promise-year .chronicle-empty-frame {
+    display: grid;
+    grid-template-columns: minmax(132px, 0.52fr) minmax(0, 1fr);
+    gap: clamp(12px, 2vw, 22px);
+    min-height: 132px;
+    padding: clamp(14px, 2vw, 20px);
+    border: 1px solid rgba(217, 197, 189, 0.72);
+    background: rgba(250, 245, 238, 0.42);
+  }
+
+  body.chronicles-mode .chronicle-empty-year.is-promise-year .chronicle-empty-photo,
+  body.chronicles-mode .chronicle-empty-year.is-promise-year .chronicle-empty-copy .chronicle-memory-date,
+  body.chronicles-mode .chronicle-empty-year.is-promise-year .chronicle-empty-copy .chronicle-memory-title,
+  body.chronicles-mode .chronicle-empty-year.is-promise-year .chronicle-empty-copy .chronicle-text-placeholder {
+    display: grid;
+  }
+
+  body.chronicles-mode .chronicle-empty-year.is-promise-year .chronicle-empty-photo {
+    min-height: 118px;
+    align-content: center;
+    border-color: rgba(201, 168, 168, 0.74);
+    color: rgba(92, 69, 83, 0.58);
+    background:
+      linear-gradient(135deg, rgba(255, 252, 247, 0.54), rgba(245, 236, 234, 0.28));
+  }
+
+  body.chronicles-mode .chronicle-empty-year.is-promise-year .chronicle-empty-copy {
+    display: flex;
+    min-height: 118px;
+    text-align: left;
+    justify-content: center;
+  }
+
+  body.chronicles-mode .chronicle-empty-year.is-promise-year .chronicle-memory-date {
+    min-height: 0;
+    color: var(--mauve);
+  }
+
+  body.chronicles-mode .chronicle-empty-year.is-promise-year .chronicle-memory-title {
+    font-family: 'LXGW WenKai TC', 'Noto Serif TC', 'Cormorant Garamond', serif;
+    font-weight: 400;
+    margin: 2px 0 8px;
+    font-size: clamp(19px, 2.05vw, 27px);
+    line-height: 1.58;
+    letter-spacing: 0.04em;
+  }
+
+  body.chronicles-mode .chronicle-empty-year.is-promise-year .chronicle-text-placeholder {
+    font-family: 'LXGW WenKai TC', 'Noto Serif TC', 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: 14px;
+    line-height: 2;
+    letter-spacing: 0.03em;
+  }
+
+  body.chronicles-mode .chronicle-empty-year.is-promise-year .chronicle-add-year {
+    align-self: flex-start;
+    margin-top: 14px;
+    min-height: 36px;
+    padding: 7px 16px;
+    color: var(--mauve);
+    border-color: rgba(166, 127, 127, 0.62);
+    background: rgba(255, 252, 247, 0.62);
+  }
+
+  body.chronicles-mode .chronicle-empty-year.is-promise-year .chronicle-add-year:hover,
+  body.chronicles-mode .chronicle-empty-year.is-promise-year .chronicle-add-year:focus-visible {
+    color: var(--paper);
+    background: var(--rose);
+    border-color: var(--rose);
   }
 
   @media (max-width: 980px) {

@@ -151,6 +151,34 @@ function chronicleImagesForEntry(entry) {
   });
 }
 
+function isCoordinateLocation(value) {
+  return /^-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?$/.test(String(value || '').trim());
+}
+
+function renderChronicleLocationTags(locationText) {
+  const parts = [...new Set(String(locationText || '')
+    .split(' · ')
+    .map(item => item.trim())
+    .filter(Boolean))];
+  const coordinates = parts.find(isCoordinateLocation);
+  const places = parts.filter(item => !isCoordinateLocation(item));
+  const visiblePlaces = places.slice(0, 3);
+  const hiddenCount = Math.max(0, places.length - visiblePlaces.length);
+  const tags = visiblePlaces.map(loc => `
+    <span class="chronicle-location-tag">
+      <span class="iconify" data-icon="ph:map-pin-thin"></span>${escapeHtml(loc)}
+    </span>`).join('');
+  const more = hiddenCount
+    ? `<span class="chronicle-location-tag chronicle-location-more">+${hiddenCount}</span>`
+    : '';
+  const coordinateMeta = coordinates
+    ? `<span class="chronicle-coordinate-meta">${escapeHtml(coordinates)}</span>`
+    : '';
+
+  if (!tags && !more && !coordinateMeta) return '';
+  return `<div class="chronicle-location-tags">${tags}${more}${coordinateMeta}</div>`;
+}
+
 function normalizeCropConfig(crop = {}, fallback = {}) {
   return {
     focalX: Number.isFinite(crop?.focalX) ? clampFocusValue(crop.focalX) : (Number.isFinite(fallback?.focalX) ? clampFocusValue(fallback.focalX) : 50),
@@ -212,7 +240,7 @@ function renderChronicleAlbum(year, entries) {
         <div class="chronicle-memory-copy">
           <span class="chronicle-memory-date">${escapeHtml(dateStr)}</span>
           <h3 class="chronicle-memory-title">${escapeHtml(title)}</h3>
-          ${locations ? `<div class="chronicle-location-tags">${locations.split(' · ').map(loc => `<span class="chronicle-location-tag"><span class="iconify" data-icon="ph:map-pin-thin"></span>${escapeHtml(loc)}</span>`).join('')}</div>` : ''}
+          ${renderChronicleLocationTags(locations)}
           ${body
             ? renderMarkdown(body, primary.bodyFormat, 'entry-body markdown-content')
             : `<div class="chronicle-text-placeholder">這一年還等著被寫下來。</div>`}
@@ -281,18 +309,23 @@ function renderChroniclePhotoCluster(images, hiddenCount, title, lightboxSetId) 
 }
 
 function renderEmptyChronicleYear(year) {
-  const title = '這一年，仍在慢慢長成我們的樣子。';
+  const currentYear = new Date().getFullYear();
+  const isPromiseYear = year === currentYear;
+  const title = '未來，我會好好做到，成為妳心中認為對的人。';
   const copy = '願未來的我們，仍有彼此，也能一起把說好的夢想，一一實現。';
+  const frameClass = isPromiseYear ? 'chronicle-empty-year is-promise-year' : 'chronicle-empty-year';
+  const photoLabel = isPromiseYear ? 'story continues...' : 'photo waits here';
+  const actionLabel = isPromiseYear ? 'Continue story' : 'Add photo';
 
   return `
-    <div class="chronicle-empty-year">
+    <div class="${frameClass}">
       <div class="chronicle-empty-frame">
-        <div class="chronicle-empty-photo">photo waits here</div>
+        <div class="chronicle-empty-photo">${photoLabel}</div>
         <div class="chronicle-empty-copy">
           <span class="chronicle-memory-date">${year}</span>
           <h3 class="chronicle-memory-title">${title}</h3>
           <div class="chronicle-text-placeholder">${copy}</div>
-          <button class="chronicle-add-year" onclick="openChronicleYearEditor(${year})">Add photo</button>
+          <button class="chronicle-add-year" onclick="openChronicleYearEditor(${year})">${actionLabel}</button>
         </div>
       </div>
     </div>
