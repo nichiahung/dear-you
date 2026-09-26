@@ -72,7 +72,7 @@ npm run dev
 
 ### Auto-deploy (recommended)
 
-Pushes to `main` that touch `index.html`, `firebase.json`, or `.firebaserc` automatically deploy Hosting via GitHub Actions (`.github/workflows/deploy.yml`).
+Pushes to `main` that touch `index.html`, `src/**`, `public/**`, `package.json`, `package-lock.json`, `functions/**`, `firebase.json`, `.firebaserc`, `firestore.rules`, `storage.rules`, or `.github/workflows/deploy.yml` automatically build and deploy Hosting via GitHub Actions (`.github/workflows/deploy.yml`). The workflow only deploys Hosting; Cloud Functions are deployed by manually running the workflow with `deploy_functions=true`, and rules are still deployed manually (see below).
 
 One-time setup — add repo secret `FIREBASE_SERVICE_ACCOUNT_DEARYOU_BFFFC` containing a Firebase service-account JSON key with the `Firebase Hosting Admin` role. Also add repo secret `FIREBASE_WEB_API_KEY` containing the restricted Firebase Web API key used at build time; `VITE_FIREBASE_API_KEY` is also accepted as a fallback secret name. See [docs/FIREBASE.md](docs/FIREBASE.md) for the exact steps.
 

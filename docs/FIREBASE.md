@@ -321,7 +321,7 @@ request.auth != null && request.auth.token.email in allowedAuthors
 
 ### Hosting（自動）
 
-`.github/workflows/deploy.yml` 在 push 到 `main` 且變動了 `index.html` / `firebase.json` / `.firebaserc` 時自動跑 `firebase deploy --only hosting`。
+`.github/workflows/deploy.yml` 在 push 到 `main` 且變動了 `index.html`、`src/**`、`public/**`、`package.json`、`package-lock.json`、`functions/**`、`firebase.json`、`.firebaserc`、`firestore.rules`、`storage.rules` 或 `.github/workflows/deploy.yml` 時，自動 build 並跑 `firebase deploy --only hosting`。此 workflow 只部署 Hosting；Functions 需手動執行 workflow 並勾選 `deploy_functions=true`（見上方 GitHub Actions Deploy），rules 仍須手動部署。
 
 一次性設定：
 
