@@ -331,6 +331,7 @@ request.auth != null && request.auth.token.email in allowedAuthors
    - Name: `FIREBASE_SERVICE_ACCOUNT_DEARYOU_BFFFC`
    - Value: 貼上整份 JSON
 4. 確認後把本機那份 JSON 刪掉（別 commit）
+5. 同一頁再新增 repo secret `FIREBASE_WEB_API_KEY`，Value 填 Firebase Web `apiKey`（也接受 `VITE_FIREBASE_API_KEY` 作為 fallback 名稱，說明見上方「Frontend Build」）。workflow build 時會 `test -n` 檢查它，沒設定 build 會直接失敗
 
 之後推 main 會自動部署。Actions tab 可看到執行狀態與部署 preview URL。
 
