@@ -87,7 +87,34 @@
     line-height: 1.75;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    font-kerning: normal;
+    text-rendering: optimizeLegibility;
     overflow-x: hidden;
+  }
+
+  ::selection {
+    background: rgba(201, 168, 168, 0.36);
+    color: var(--ink);
+  }
+
+  /* Keyboard focus: a thin gold rule, like a pencil mark in the margin. */
+  :focus-visible {
+    outline: 1px solid var(--gold);
+    outline-offset: 4px;
+  }
+
+  h1, h2, h3,
+  .cover-hint,
+  .chapter-intro-title,
+  .modal-title {
+    text-wrap: balance;
+  }
+
+  p,
+  .chapter-intro,
+  .dedication-poem-en,
+  .dedication-poem-zh {
+    text-wrap: pretty;
   }
 
   body {
@@ -146,6 +173,11 @@
   }
   .stage.active {
     display: flex;
+  }
+
+  .stage > .cover-content,
+  .stage > .dedication-content {
+    margin-block: auto;
   }
 
   /* Generated floral cover background - blurred for elegance */
@@ -423,6 +455,7 @@
     transition: border-color 0.32s var(--ease-soft), color 0.32s var(--ease-soft);
     letter-spacing: 6px;
     text-transform: uppercase;
+    white-space: nowrap;
     position: relative;
     overflow: hidden;
     opacity: 0;
@@ -610,6 +643,7 @@
     transition: background 0.34s var(--ease-soft), color 0.34s var(--ease-soft), border-color 0.34s var(--ease-soft), transform 0.34s var(--ease-soft);
     letter-spacing: 4px;
     text-transform: uppercase;
+    white-space: nowrap;
     display: inline-flex;
     align-items: center;
     opacity: 0;
@@ -1411,10 +1445,33 @@
     padding: 8px 22px;
     letter-spacing: 3px;
     text-transform: uppercase;
+    white-space: nowrap;
     transition: background 0.28s var(--ease-soft), color 0.28s var(--ease-soft), border-color 0.28s var(--ease-soft);
   }
 
   .new-btn:active { background: var(--rose); color: var(--paper); }
+
+  /* Pointer-only hover states, so touch devices never keep a sticky highlight. */
+  @media (hover: hover) and (pointer: fine) {
+    .new-btn:hover {
+      background: var(--mauve);
+      border-color: var(--mauve);
+      color: var(--paper-cream);
+    }
+
+    .chapter:not(.active):hover .chapter-name-zh,
+    .chapter:not(.active):hover .chapter-name-en {
+      color: var(--ink-soft);
+      opacity: 1;
+    }
+
+    .chapter:not(.active):hover::after { width: 16px; background: var(--rose); }
+    .chapter:not(.active):hover .chapter-icon { color: var(--rose-deep); }
+  }
+
+  .chapter:focus-visible {
+    outline-offset: -8px;
+  }
 
   /* === Entry card === */
   .entry {
@@ -6025,6 +6082,9 @@
   @media (max-width: 640px) {
     .cover-title-zh { font-size: 64px; letter-spacing: 8px; margin-left: 8px; }
     .cover-title-en { font-size: 20px; letter-spacing: 2px; }
+    .cover-content { padding: 32px 8px; }
+    .cover-hint { font-size: 25px; line-height: 1.3; }
+    .open-btn { padding: 14px 32px; letter-spacing: 4px; }
     .app-title-zh { font-size: 56px; }
     .app-title-en { font-size: 13px; letter-spacing: 4px; }
     .dedication-name { font-size: 56px; }
@@ -6057,7 +6117,9 @@
       font-size: 12px;
       letter-spacing: 1.4px;
     }
-    .chapter { min-width: calc(50% - 4px); }
+    .app-header { padding: 48px 24px 30px; }
+    .chapters { padding: 22px 16px 26px; }
+    .chapter { min-width: calc(50% - 4px); padding: 14px 10px; }
     .chapter-frontispiece {
       width: calc(100% + 32px);
       margin-left: -16px;
@@ -6534,6 +6596,9 @@
       padding-bottom: 10px;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: none;
+      /* Fade the trailing edge so it reads as "more tools this way". */
+      -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent);
+      mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent);
     }
     .markdown-toolbar::-webkit-scrollbar {
       display: none;

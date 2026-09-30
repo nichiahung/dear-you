@@ -114,6 +114,7 @@ firebase/analytics
 - 動畫：CSS keyframes 與 transition
 - 文案：封面、Dedication、章節標語
 - Firebase client config：Web app public config
+- Favicon：SVG data URL（燻金菱形外框 + 藕色實心菱形，呼應封面 ◆ 裝飾）
 
 ## Color System
 
